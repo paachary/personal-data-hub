@@ -1,0 +1,80 @@
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.statCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.statCard:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+    transform: translateY(-1px);
+}
+
+.cardIcon {
+    font-size: 1.75rem;
+}
+.cardLabel {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin: 0;
+}
+.cardValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.panel {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.panelTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 1.25rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem 0;
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+.emptyHint {
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    color: #d1d5db;
+}
+
+.shimmer {
+    color: #334155;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}

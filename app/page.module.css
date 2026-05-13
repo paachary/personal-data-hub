@@ -1,0 +1,89 @@
+.loadingWrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.pageWrapper {
+    display: flex;
+    min-height: 100vh;
+    background: #f3f4f6;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+}
+
+/* .main {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    overflow-y: auto;
+    box-sizing: border-box;
+} */
+
+.main {
+    background: #0f172a;
+    flex: 1;
+    overflow-y: auto; /* ← was hidden, change to auto */
+    overflow-x: hidden;
+    padding: 0;
+    position: relative; /* ← add this so absolute children position correctly */
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.greeting {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #d7d7e0;
+    margin: 0;
+}
+.subtext {
+    font-size: 0.925rem;
+    color: #6b7280;
+    margin-top: 0.35rem;
+}
+
+.panel {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.panelTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 1.25rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem 0;
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+.emptyHint {
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    color: #d1d5db;
+}

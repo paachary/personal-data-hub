@@ -1,0 +1,78 @@
+.page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.hero {
+    text-align: center;
+    padding: 2rem;
+    background: #111827;
+    border: 1px solid #1e2a3a;
+    border-radius: 12px;
+}
+
+.heroIcon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+}
+.heroTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 0 0 0.5rem;
+}
+.heroSubtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.step {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: #111827;
+    border: 1px solid #1e2a3a;
+    border-radius: 10px;
+}
+
+.stepIcon {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+.stepTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 0 0 0.5rem;
+}
+.stepContent {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    line-height: 1.7;
+}
+.stepContent p {
+    margin: 0 0 0.5rem;
+}
+.stepContent ul,
+.stepContent ol {
+    padding-left: 1.25rem;
+    margin: 0 0 0.5rem;
+}
+.stepContent li {
+    margin-bottom: 0.25rem;
+}
+.stepContent strong {
+    color: #e2e8f0;
+}
