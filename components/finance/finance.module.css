@@ -1,0 +1,391 @@
+/* ── Layout ─────────────────────────────────────────────── */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #d5d7db; /* ← add dark background */
+    min-height: 100%;
+    border-radius: 12px;
+}
+
+.title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1e1f20; /* ← keep bright for dark bg */
+}
+
+.subtitle {
+    font-size: 0.85rem;
+    color: #52729b;
+    margin: 0.5rem 0.5rem 1rem;
+}
+
+/* ── Cards grid ─────────────────────────────────────────── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background: #1a2035;
+    border: 1px solid #2a3352;
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.cardTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.cardMeta {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.cardBadge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #1e40af33;
+    color: #afd9f8;
+    width: fit-content;
+}
+
+.cardActions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.closedBadge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #7f1d1d33;
+    color: #fca5a5;
+    width: fit-content;
+}
+
+.activeBadge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #14532d33;
+    color: #86efac;
+    width: fit-content;
+}
+
+/* ── Tabs ───────────────────────────────────────────────── */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tab {
+    padding: 0.45rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #2a3352;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.tab:hover {
+    border-color: #3b82f6;
+    color: #93c5fd;
+}
+
+.tabActive {
+    background: #1e40af;
+    border-color: #1e40af;
+    color: #fff;
+}
+
+/* ── Table ──────────────────────────────────────────────── */
+.tableWrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #2a3352;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: #111827;
+}
+
+.table th {
+    background: #051d73;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #dfe6ee;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid #2a3352;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #1a2035;
+    vertical-align: middle;
+    color: #07111d;
+    font-size: 0.875rem;
+    background: #b3b5ba;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table tr:hover td {
+    background: #737787;
+    color: #e2e8f0;
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.btn {
+    padding: 0.45rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.15s;
+}
+
+.btn:hover {
+    opacity: 0.88;
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.btnPrimary {
+    background: #1e40af;
+    color: #fff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.btnSecondary {
+    background: transparent;
+    border: 1px solid #0b0b0c;
+    color: #22242c;
+}
+
+.btnSecondary:hover {
+    border-color: #010710;
+    color: #e9ecf0;
+}
+
+.btnDanger {
+    background: #7f1d1d22;
+    color: #a01717;
+    border: 1px solid #7f1d1d44;
+}
+
+.btnDanger:hover {
+    background: #eae4e444;
+}
+
+.btnSm {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+}
+
+/* ── Modal ──────────────────────────────────────────────── */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: #00000099;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(3px);
+}
+
+.modal {
+    background: #7c7d7e;
+    border: 1px solid #2a3352;
+    border-radius: 16px;
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #a5abb2;
+    transition: color 0.15s;
+}
+
+.closeBtn:hover {
+    color: #e2e8f0;
+}
+
+/* ── Form fields ────────────────────────────────────────── */
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #ccd3dc;
+}
+
+.required {
+    color: #fca5a5;
+}
+
+.input,
+.select {
+    width: 100%;
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #2a3352;
+    background: #0d1117;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.input:focus,
+.select:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.input::placeholder {
+    color: #2a3352;
+}
+
+.select option {
+    background: #1a2035;
+    color: #cbd5e1;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.error {
+    color: #fca5a5;
+    font-size: 0.82rem;
+    margin: 0;
+}
+
+/* ── Summary cards ──────────────────────────────────────── */
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summaryCard {
+    background: #1a2035;
+    border: 1px solid #2a3352;
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.summaryLabel {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.summaryValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.summaryChange {
+    font-size: 0.78rem;
+    color: #86efac;
+    margin: 0;
+}
+
+/* ── Empty state ────────────────────────────────────────── */
+.empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #64748b;
+}
+
+.emptyIcon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}

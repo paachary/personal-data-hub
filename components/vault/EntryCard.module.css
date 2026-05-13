@@ -1,0 +1,141 @@
+.card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+}
+
+.cardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+}
+
+.cardMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.icon {
+    font-size: 1.5rem;
+}
+
+.label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2563eb;
+    background: #eff6ff;
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+}
+
+.cardActions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.actionBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.actionBtn:hover {
+    background: #f3f4f6;
+}
+
+/* ── Fields ── */
+.fieldList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border-top: 1px solid #f9fafb;
+    padding-top: 0.75rem;
+}
+
+.fieldRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.83rem;
+    min-height: 1.5rem;
+}
+
+.fieldLabel {
+    width: 130px;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.fieldValue {
+    flex: 1;
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fieldNote {
+    flex: 1;
+    color: #6b7280;
+    font-size: 0.82rem;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+.empty {
+    color: #d1d5db;
+    font-size: 0.82rem;
+}
+
+.maskedRow {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.maskedValue {
+    font-family: monospace;
+    color: #374151;
+    font-size: 0.85rem;
+}
+
+.iconBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.78rem;
+    padding: 0.15rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.iconBtn:hover {
+    background: #f3f4f6;
+}

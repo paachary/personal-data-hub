@@ -1,0 +1,92 @@
+{
+    "name": "personal-data",
+    "version": "0.1.0",
+    "private": true,
+    "main": "./electron/main.js",
+    "author": {
+        "name": "Prashant Acharya",
+        "email": "prashant_acharya@yahoo.com"
+    },
+    "scripts": {
+        "next-dev": "next dev -p 4000",
+        "electron-dev": "cross-env NODE_ENV=development wait-on http://localhost:4000 && nodemon --watch electron --ext js --exec \"electron ./electron/main.js\"",
+        "dev": "concurrently \"npm run next-dev\" \"npm run electron-dev\"",
+        "build": "next build",
+        "start": "next start -p 4000",
+        "dist:mac": "npm run build && electron-builder --mac",
+        "dist:linux": "npm run build && electron-builder --linux",
+        "dist:win": "npm run build && electron-builder --win",
+        "postinstall": "electron-rebuild -f -w keytar"
+    },
+    "build": {
+        "asar": false,
+        "appId": "com.personal.data",
+        "productName": "personal-data",
+        "files": [
+            "electron/**/*",
+            "database/**/*",
+            "out/**/*",
+            "package.json"
+        ],
+        "mac": {
+            "target": [
+                "dmg",
+                "zip"
+            ],
+            "category": "public.app-category.productivity",
+            "identity": null,
+            "icon": "build/icon.icns"
+        },
+        "linux": {
+            "target": [
+                "AppImage",
+                "deb"
+            ],
+            "category": "Utility",
+            "icon": "build/icon.png",
+            "executableName": "personal-data"
+        },
+        "win": {
+            "icon": "build/icon.ico",
+            "target": [
+                "nsis"
+            ]
+        },
+        "extraResources": [
+            {
+                "from": "database/",
+                "to": "database/"
+            }
+        ]
+    },
+    "dependencies": {
+        "bcryptjs": "^3.0.3",
+        "better-sqlite3": "^12.9.0",
+        "better-sqlite3-multiple-ciphers": "^12.9.0",
+        "crypto": "^1.0.1",
+        "crypto-js": "^4.2.0",
+        "docx": "^9.6.1",
+        "keytar": "^7.9.0",
+        "lowdb": "^1.0.0",
+        "marked": "^18.0.3",
+        "next": "16.2.3",
+        "qrcode": "^1.5.4",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "speakeasy": "^2.0.0",
+        "uuid": "^13.0.0"
+    },
+    "devDependencies": {
+        "@electron/rebuild": "^4.0.4",
+        "babel-plugin-react-compiler": "1.0.0",
+        "concurrently": "^9.2.1",
+        "cross-env": "^10.1.0",
+        "electron": "^41.2.0",
+        "electron-builder": "^25.1.8",
+        "electron-rebuild": "^3.2.9",
+        "eslint": "^9",
+        "eslint-config-next": "16.2.3",
+        "nodemon": "^3.1.14",
+        "wait-on": "^9.0.4"
+    }
+}

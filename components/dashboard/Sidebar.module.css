@@ -1,0 +1,143 @@
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #1e293b;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.sidebarHeader {
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: 0.02em;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+}
+
+.navGroup {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0.85rem 0 0.35rem 0.5rem;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s ease, color 0.15s ease;
+    -webkit-app-region: no-drag;
+}
+
+.navItem:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+.navItemActive {
+    background: #2563eb;
+    color: #ffffff;
+}
+.navItemActive:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.sidebarFooter {
+    border-top: 1px solid #334155;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.userBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.usernameLabel {
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logoutButton {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    -webkit-app-region: no-drag;
+}
+
+.logoutButton:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+.adminSubNav {
+    margin-top: 0.25rem;
+}
+
+.navSubGroup {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #f59e0b;
+    padding: 0.5rem 1rem 0.2rem;
+    margin: 0;
+}
+
+.navItemIndented {
+    padding-left: 1.75rem; /* ← indent to show hierarchy */
+    font-size: 0.82rem;
+}
