@@ -25,6 +25,7 @@
         "files": [
             "electron/**/*",
             "database/**/*",
+            "help/**/*",
             "out/**/*",
             "package.json"
         ],
