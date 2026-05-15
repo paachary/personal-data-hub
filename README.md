@@ -108,13 +108,15 @@ It is designed as a single, unified place to store:
 
 ```bash
 chmod +x personal-data-x.x.x.AppImage
-./personal-data-x.x.x.AppImage
+./personal-data-x.x.x.AppImage --no-sandbox
 ```
 
 #### .deb (Debian / Ubuntu)
 
 ```bash
 sudo dpkg -i personal-data-x.x.x.deb
+personal-data --no-sandbox
+
 ```
 
 #### Required system libraries
