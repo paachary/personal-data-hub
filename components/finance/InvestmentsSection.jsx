@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import styles from "./finance.module.css";
 import InvestmentModal from "./InvestmentModal";
 import UserFilter from "./UserFilter";
+import InvestmentDistributionChart from "./InvestmentDistributionChart";
 
 const fmt = (n) =>
     new Intl.NumberFormat("en-IN", {
@@ -24,6 +25,7 @@ export default function InvestmentsSection({
     const [loading, setLoading] = useState(true);
 
     const [selectedUsers, setSelectedUsers] = useState([]);
+    const [chartUser, setChartUser] = useState("");
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -49,6 +51,13 @@ export default function InvestmentsSection({
         load();
     }, [load]);
 
+    // Set default chart user to first user in the list when data loads (admin only)
+    useEffect(() => {
+        if (viewAll && investments.length > 0 && !chartUser) {
+            setChartUser(investments[0].username);
+        }
+    }, [viewAll, investments, chartUser]);
+
     const deleteInvestment = async (id) => {
         if (!confirm("Delete this investment?")) return;
         await window.electronAPI.investments.delete(id);
@@ -66,8 +75,31 @@ export default function InvestmentsSection({
 
     const totalAmount = useMemo(
         () => filtered.reduce((sum, inv) => sum + (inv.amount || 0), 0),
-        [filtered]
+        [filtered],
     );
+
+    // Derive sorted unique users for the admin chart dropdown
+    const adminUserOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.username)) return false;
+                seen.add(i.username);
+                return true;
+            })
+            .map((i) => ({
+                username: i.username,
+                name: `${i.first_name} ${i.last_name}`,
+            }));
+    }, [investments]);
+
+    // Investments for the selected chart user, respecting the active filter
+    const chartUserInvestments = useMemo(() => {
+        let data = investments.filter((i) => i.username === chartUser);
+        if (filter === "active") data = data.filter((i) => !i.is_closed);
+        if (filter === "closed") data = data.filter((i) => i.is_closed);
+        return data;
+    }, [investments, chartUser, filter]);
 
     // ── Admin "view all" mode ─────────────────────────────────────
     if (viewAll) {
@@ -83,6 +115,31 @@ export default function InvestmentsSection({
                         </p>
                     </div>
                 </div>
+
+                {/* ── Per-user chart ───────────────────────────── */}
+                {!loading && adminUserOptions.length > 0 && (
+                    <div className={styles.chartSection}>
+                        <div className={styles.chartUserPickerRow}>
+                            <label className={styles.chartUserPickerLabel}>
+                                Chart for user:
+                            </label>
+                            <select
+                                className={styles.chartUserSelect}
+                                value={chartUser}
+                                onChange={(e) => setChartUser(e.target.value)}
+                            >
+                                {adminUserOptions.map((u) => (
+                                    <option key={u.username} value={u.username}>
+                                        {u.name} (@{u.username})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <InvestmentDistributionChart
+                            investments={chartUserInvestments}
+                        />
+                    </div>
+                )}
 
                 <UserFilter // ← add
                     data={investments}
@@ -252,6 +309,10 @@ export default function InvestmentsSection({
                     </button>
                 )}
             </div>
+
+            {!loading && investments.length > 0 && (
+                <InvestmentDistributionChart investments={filtered} />
+            )}
 
             <div className={styles.tabs}>
                 {[
