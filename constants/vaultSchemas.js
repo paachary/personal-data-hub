@@ -20,11 +20,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
             {
                 name: "netbankingUserId",
@@ -107,11 +109,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
         ],
     },
@@ -137,11 +141,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
         ],
     },
@@ -162,11 +168,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
             {
                 name: "issueDate",
@@ -204,11 +212,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
         ],
     },
@@ -243,11 +253,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
         ],
     },
@@ -269,11 +281,13 @@ export const VAULT_SCHEMAS = {
                 name: "registeredEmail",
                 label: "Registered Email",
                 type: "email",
+                required: true,
             },
             {
                 name: "registeredMobile",
                 label: "Registered Mobile",
                 type: "tel",
+                required: true,
             },
             { name: "url", label: "URL", type: "url" },
             { name: "notes", label: "Notes", type: "textarea" },
@@ -301,6 +315,7 @@ export const NOTE_SCHEMA = {
             name: "description",
             label: "Description",
             type: "textarea",
+            required: true,
         },
         {
             name: "content",
@@ -321,5 +336,5 @@ export const NOTE_SCHEMA = {
 };
 
 export const VAULT_CATEGORY_LIST = Object.entries(VAULT_SCHEMAS).map(
-    ([id, schema]) => ({ id, ...schema })
+    ([id, schema]) => ({ id, ...schema }),
 );

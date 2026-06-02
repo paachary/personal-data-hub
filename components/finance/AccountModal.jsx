@@ -92,7 +92,8 @@ export default function AccountModal({
                                 onChange={(e) =>
                                     set("account_number", e.target.value)
                                 }
-                                placeholder="Optional"
+                                placeholder="Mandatory for bank accounts"
+                                required
                             />
                         </div>
                         <div className={styles.field}>
@@ -129,8 +130,8 @@ export default function AccountModal({
                             {saving
                                 ? "Saving..."
                                 : existing
-                                ? "Update"
-                                : "Add Account"}
+                                  ? "Update"
+                                  : "Add Account"}
                         </button>
                     </div>
                 </form>
