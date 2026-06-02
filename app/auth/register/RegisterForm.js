@@ -1,13 +1,18 @@
 // app/auth/register/RegisterForm.js
 "use client";
 
-import { Suspense, useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../auth.module.css";
 import FormField from "@/components/common/FormField";
+import LocationDropdown from "@/components/common/LocationDropdown";
 import FormActions from "@/components/common/FormActions";
 import { validatePassword } from "@/constants/passwordRules";
 import useFormState from "@/hooks/useFormState";
+
+const COUNTRIES_STATES_URL =
+    "https://countriesnow.space/api/v0.1/countries/states";
+const CITIES_URL = "https://countriesnow.space/api/v0.1/countries/state/cities";
 
 function RegisterFormInner() {
     const router = useRouter();
@@ -15,6 +20,14 @@ function RegisterFormInner() {
     const [isAdmin, setIsAdmin] = useState(false);
 
     const [loading, setLoading] = useState(false);
+
+    // ── Location cascade state ──
+    const [countriesData, setCountriesData] = useState([]); // [{name, states:[{name}]}]
+    const [stateOptions, setStateOptions] = useState([]);
+    const [cityOptions, setCityOptions] = useState([]);
+    const [loadingCountries, setLoadingCountries] = useState(false);
+    const [loadingCities, setLoadingCities] = useState(false);
+    const [locationFallback, setLocationFallback] = useState(false); // use text inputs if API fails
 
     const {
         form,
@@ -45,6 +58,67 @@ function RegisterFormInner() {
     useEffect(() => {
         firstNameRef.current?.focus();
     }, []);
+
+    // Fetch countries + states once on mount
+    useEffect(() => {
+        let cancelled = false;
+        setLoadingCountries(true);
+        fetch(COUNTRIES_STATES_URL)
+            .then((r) => {
+                if (!r.ok) throw new Error("Failed to fetch countries");
+                return r.json();
+            })
+            .then((json) => {
+                if (!cancelled) {
+                    setCountriesData(json.data ?? []);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setLocationFallback(true);
+            })
+            .finally(() => {
+                if (!cancelled) setLoadingCountries(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const handleCountryChange = useCallback(
+        (e) => {
+            const country = e.target.value;
+            setForm((prev) => ({ ...prev, country, state: "", city: "" }));
+            setCityOptions([]);
+            const found = countriesData.find((c) => c.name === country);
+            setStateOptions(found?.states?.map((s) => s.name) ?? []);
+        },
+        [countriesData, setForm],
+    );
+
+    const handleStateChange = useCallback(
+        async (e) => {
+            const state = e.target.value;
+            setForm((prev) => ({ ...prev, state, city: "" }));
+            setCityOptions([]);
+            if (!state || !form.country) return;
+            setLoadingCities(true);
+            try {
+                const res = await fetch(CITIES_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ country: form.country, state }),
+                });
+                if (!res.ok) throw new Error("Failed to fetch cities");
+                const json = await res.json();
+                setCityOptions(json.data ?? []);
+            } catch {
+                setCityOptions([]);
+            } finally {
+                setLoadingCities(false);
+            }
+        },
+        [form.country, setForm],
+    );
 
     const ADMIN_DEFAULTS = {
         firstName: "System",
@@ -85,6 +159,8 @@ function RegisterFormInner() {
     const handleReset = () => {
         setIsAdmin(false);
         resetForm();
+        setStateOptions([]);
+        setCityOptions([]);
         firstNameRef.current?.focus();
     };
 
@@ -200,37 +276,88 @@ function RegisterFormInner() {
                 onChange={handleChange}
             />
             <div className={styles.row}>
-                <FormField
-                    id="city"
-                    label="City"
-                    name="city"
-                    value={form.city}
-                    onChange={handleChange}
-                    required
-                />
-                <FormField
-                    id="state"
-                    label="State"
-                    name="state"
-                    value={form.state}
-                    onChange={handleChange}
-                    required
-                />
+                {locationFallback ? (
+                    <FormField
+                        id="country"
+                        label="Country"
+                        name="country"
+                        value={form.country}
+                        onChange={handleChange}
+                        required
+                    />
+                ) : (
+                    <LocationDropdown
+                        id="country"
+                        label="Country"
+                        name="country"
+                        value={form.country}
+                        onChange={handleCountryChange}
+                        options={countriesData.map((c) => c.name)}
+                        loading={loadingCountries}
+                        required
+                        placeholder="— Select Country —"
+                    />
+                )}
+                {locationFallback ? (
+                    <FormField
+                        id="state"
+                        label="State / Province"
+                        name="state"
+                        value={form.state}
+                        onChange={handleChange}
+                        required
+                    />
+                ) : (
+                    <LocationDropdown
+                        id="state"
+                        label="State / Province"
+                        name="state"
+                        value={form.state}
+                        onChange={handleStateChange}
+                        options={stateOptions}
+                        disabled={!form.country}
+                        required
+                        placeholder={
+                            form.country
+                                ? "— Select State —"
+                                : "— Select Country first —"
+                        }
+                    />
+                )}
             </div>
             <div className={styles.row}>
+                {locationFallback ? (
+                    <FormField
+                        id="city"
+                        label="City"
+                        name="city"
+                        value={form.city}
+                        onChange={handleChange}
+                        required
+                    />
+                ) : (
+                    <LocationDropdown
+                        id="city"
+                        label="City"
+                        name="city"
+                        value={form.city}
+                        onChange={handleChange}
+                        options={cityOptions}
+                        disabled={!form.state}
+                        loading={loadingCities}
+                        required
+                        placeholder={
+                            form.state
+                                ? "— Select City —"
+                                : "— Select State first —"
+                        }
+                    />
+                )}
                 <FormField
                     id="zip"
                     label="ZIP Code"
                     name="zip"
                     value={form.zip}
-                    onChange={handleChange}
-                    required
-                />
-                <FormField
-                    id="country"
-                    label="Country"
-                    name="country"
-                    value={form.country}
                     onChange={handleChange}
                     required
                 />
