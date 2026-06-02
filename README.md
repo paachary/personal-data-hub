@@ -264,16 +264,17 @@ rm -rf ~/.config/personal-data-hub/
 
 ## Tech Stack
 
-| Layer           | Technology           |
-| --------------- | -------------------- |
-| Desktop shell   | Electron 41          |
-| Frontend        | Next.js 16, React 19 |
-| Database        | better-sqlite3       |
-| Encryption      | crypto-js, bcryptjs  |
-| Keychain        | keytar               |
-| MFA             | speakeasy, qrcode    |
-| Charts          | recharts             |
-| Document export | docx                 |
+| Layer                             | Technology                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| Desktop shell                     | Electron 41                                                                   |
+| Frontend                          | Next.js 16, React 19                                                          |
+| Database (accounts & investments) | SQLite via better-sqlite3 (AES-encrypted via better-sqlite3-multiple-ciphers) |
+| Database (vault & notes)          | lowdb (AES-encrypted JSON file, one per user)                                 |
+| Encryption                        | crypto-js, bcryptjs                                                           |
+| Keychain                          | keytar                                                                        |
+| MFA                               | speakeasy, qrcode                                                             |
+| Charts                            | recharts                                                                      |
+| Document export                   | docx                                                                          |
 
 ---
 
