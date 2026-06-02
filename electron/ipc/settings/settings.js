@@ -8,27 +8,59 @@ function registerSettingsHandlers() {
     ipcMain.handle("settings:getProfile", (event, userId) => {
         return getMasterDb()
             .prepare(
-                `SELECT first_name, last_name, email, phone FROM users WHERE id = ?`
+                `SELECT first_name, last_name, email, phone,
+                        address_line1, address_line2, city, state, zip, country
+                 FROM users WHERE id = ?`,
             )
             .get(userId);
     });
 
     ipcMain.handle(
         "settings:updateProfile",
-        (event, { firstName, lastName, email, phone }) => {
+        (
+            event,
+            {
+                firstName,
+                lastName,
+                email,
+                phone,
+                addressLine1,
+                addressLine2,
+                city,
+                state,
+                zip,
+                country,
+            },
+        ) => {
             const session = getSession();
             getMasterDb()
                 .prepare(
-                    `UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, updated_at = datetime('now') WHERE id = ? `
+                    `UPDATE users
+                     SET first_name = ?, last_name = ?, email = ?, phone = ?,
+                         address_line1 = ?, address_line2 = ?, city = ?, state = ?, zip = ?, country = ?,
+                         updated_at = datetime('now')
+                     WHERE id = ?`,
                 )
-                .run(firstName, lastName, email, phone || null, session.userId);
+                .run(
+                    firstName,
+                    lastName,
+                    email,
+                    phone || null,
+                    addressLine1 || null,
+                    addressLine2 || null,
+                    city || null,
+                    state || null,
+                    zip || null,
+                    country || null,
+                    session.userId,
+                );
 
             // keep session in sync
             session.firstName = firstName;
             session.lastName = lastName;
             session.fullName = `${firstName} ${lastName}`.trim();
             return { success: true };
-        }
+        },
     );
 
     ipcMain.handle(
@@ -57,11 +89,11 @@ function registerSettingsHandlers() {
                 .toString("hex");
 
             db.prepare(
-                `UPDATE users SET salt=?, password_hash=? WHERE id=?`
+                `UPDATE users SET salt=?, password_hash=? WHERE id=?`,
             ).run(newSalt, newHash, session.userId);
 
             return { success: true };
-        }
+        },
     );
 }
 
