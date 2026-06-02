@@ -16,7 +16,7 @@
         "secure storage"
     ],
     "readme": "# Personal Data Hub\n\nPersonal Data Hub is a secure and user-friendly desktop application for managing your personal data. Built with Electron and Next.js, it provides a seamless experience for organizing, storing, and accessing your sensitive information.\n\n## Features\n\n- **Secure Storage**: Encrypt your data using industry-standard encryption techniques to ensure your information is safe.\n- **User-Friendly Interface**: A clean and intuitive interface that makes it easy to manage your personal data.\n- **Cross-Platform**: Available on Windows, macOS, and Linux.\n- **Data Organization**: Categorize and tag your data for easy retrieval.\n- **Backup and Sync**: Option to backup your data locally or sync with cloud services (coming soon).\n\n## Installation\n\n1. Clone the repository:\n   ```bash\n   git clone",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "private": true,
     "main": "./electron/main.js",
     "author": {

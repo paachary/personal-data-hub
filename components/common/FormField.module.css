@@ -22,7 +22,9 @@
     border: 1px solid #d1d5db;
     font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
     background-color: #f9fafb;
 }
 
@@ -37,4 +39,35 @@
     cursor: not-allowed;
     border-color: #2d3448 !important;
     user-select: none;
+}
+
+.select {
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+    outline: none;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    background-color: #f9fafb;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+    background-color: #ffffff;
+}
+
+.selectDisabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
 }
