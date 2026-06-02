@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import styles from "./settings.module.css";
-import LocationDropdown from "@/components/common/LocationDropdown";
+import PersonalInfoPanel from "./PersonalInfoPanel";
+import AddressInfoPanel from "./AddressInfoPanel";
 
 const COUNTRIES_STATES_URL =
     "https://countriesnow.space/api/v0.1/countries/states";
@@ -34,7 +35,7 @@ export default function SettingsProfilePanel() {
     const [profileSuccess, setProfileSuccess] = useState("");
     const [savingProfile, setSavingProfile] = useState(false);
 
-    // Sub-tab navigation: "personal" | "address"
+    // "personal" | "address"
     const [activeProfileTab, setActiveProfileTab] = useState("personal");
 
     // Fetch countries + states once on mount
@@ -83,7 +84,6 @@ export default function SettingsProfilePanel() {
                 country: savedCountry,
             });
 
-            // Pre-populate states if country already saved
             if (savedCountry) {
                 fetch(COUNTRIES_STATES_URL)
                     .then((r) => r.json())
@@ -98,7 +98,6 @@ export default function SettingsProfilePanel() {
                     .catch(() => {});
             }
 
-            // Pre-populate cities if state already saved
             if (savedCountry && savedState) {
                 fetch(CITIES_URL, {
                     method: "POST",
@@ -138,10 +137,7 @@ export default function SettingsProfilePanel() {
                 const res = await fetch(CITIES_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        country: profile.country,
-                        state,
-                    }),
+                    body: JSON.stringify({ country: profile.country, state }),
                 });
                 if (!res.ok) throw new Error();
                 const json = await res.json();
@@ -200,22 +196,14 @@ export default function SettingsProfilePanel() {
             <div className={styles.subTabs}>
                 <button
                     type="button"
-                    className={`${styles.subTab} ${
-                        activeProfileTab === "personal"
-                            ? styles.subTabActive
-                            : ""
-                    }`}
+                    className={`${styles.subTab} ${activeProfileTab === "personal" ? styles.subTabActive : ""}`}
                     onClick={() => setActiveProfileTab("personal")}
                 >
                     Personal
                 </button>
                 <button
                     type="button"
-                    className={`${styles.subTab} ${
-                        activeProfileTab === "address"
-                            ? styles.subTabActive
-                            : ""
-                    }`}
+                    className={`${styles.subTab} ${activeProfileTab === "address" ? styles.subTabActive : ""}`}
                     onClick={() => setActiveProfileTab("address")}
                 >
                     Address
@@ -223,240 +211,30 @@ export default function SettingsProfilePanel() {
             </div>
 
             <form onSubmit={handleProfileSave} className={styles.form}>
-                {/* ── Personal sub-tab ── */}
                 {activeProfileTab === "personal" && (
-                    <>
-                        <div className={styles.row}>
-                            <div className={styles.field}>
-                                <label className={styles.label}>
-                                    First Name{" "}
-                                    <span className={styles.required}>*</span>
-                                </label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.firstName}
-                                    onChange={(e) =>
-                                        setProfile((p) => ({
-                                            ...p,
-                                            firstName: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="John"
-                                />
-                            </div>
-                            <div className={styles.field}>
-                                <label className={styles.label}>
-                                    Last Name
-                                </label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.lastName}
-                                    onChange={(e) =>
-                                        setProfile((p) => ({
-                                            ...p,
-                                            lastName: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="Doe"
-                                />
-                            </div>
-                        </div>
-                        <div className={styles.field}>
-                            <label className={styles.label}>
-                                Email <span className={styles.required}>*</span>
-                            </label>
-                            <input
-                                className={styles.input}
-                                type="email"
-                                value={profile.email}
-                                onChange={(e) =>
-                                    setProfile((p) => ({
-                                        ...p,
-                                        email: e.target.value,
-                                    }))
-                                }
-                                placeholder="john@example.com"
-                            />
-                        </div>
-                        <div className={styles.row}>
-                            <div className={styles.field}>
-                                <label className={styles.label}>
-                                    Mobile Number
-                                </label>
-                                <input
-                                    className={styles.input}
-                                    type="tel"
-                                    value={profile.phone}
-                                    onChange={(e) =>
-                                        setProfile((p) => ({
-                                            ...p,
-                                            phone: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="+44 7700 900000"
-                                />
-                            </div>
-                            <div style={{ flex: 1 }} />
-                        </div>
-                    </>
+                    <PersonalInfoPanel
+                        profile={profile}
+                        setProfile={setProfile}
+                    />
                 )}
-
-                {/* ── Address sub-tab ── */}
                 {activeProfileTab === "address" && (
-                    <>
-                        <div className={styles.field}>
-                            <label className={styles.label}>
-                                Street Address
-                            </label>
-                            <input
-                                className={styles.input}
-                                value={profile.addressLine1}
-                                onChange={(e) =>
-                                    setProfile((p) => ({
-                                        ...p,
-                                        addressLine1: e.target.value,
-                                    }))
-                                }
-                                placeholder="123 Main St"
-                            />
-                        </div>
-                        <div className={styles.field}>
-                            <label className={styles.label}>
-                                Apartment / Suite (optional)
-                            </label>
-                            <input
-                                className={styles.input}
-                                value={profile.addressLine2}
-                                onChange={(e) =>
-                                    setProfile((p) => ({
-                                        ...p,
-                                        addressLine2: e.target.value,
-                                    }))
-                                }
-                                placeholder="Apt 4B"
-                            />
-                        </div>
-                        <div className={styles.row}>
-                            {locationFallback ? (
-                                <div className={styles.field}>
-                                    <label className={styles.label}>
-                                        Country
-                                    </label>
-                                    <input
-                                        className={styles.input}
-                                        value={profile.country}
-                                        onChange={(e) =>
-                                            setProfile((p) => ({
-                                                ...p,
-                                                country: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="Country"
-                                    />
-                                </div>
-                            ) : (
-                                <LocationDropdown
-                                    id="country"
-                                    label="Country"
-                                    name="country"
-                                    value={profile.country}
-                                    onChange={handleCountryChange}
-                                    options={countriesData.map((c) => c.name)}
-                                    loading={loadingCountries}
-                                    placeholder="— Select Country —"
-                                />
-                            )}
-                            {locationFallback ? (
-                                <div className={styles.field}>
-                                    <label className={styles.label}>
-                                        State / Province
-                                    </label>
-                                    <input
-                                        className={styles.input}
-                                        value={profile.state}
-                                        onChange={(e) =>
-                                            setProfile((p) => ({
-                                                ...p,
-                                                state: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="State"
-                                    />
-                                </div>
-                            ) : (
-                                <LocationDropdown
-                                    id="state"
-                                    label="State / Province"
-                                    name="state"
-                                    value={profile.state}
-                                    onChange={handleStateChange}
-                                    options={stateOptions}
-                                    disabled={!profile.country}
-                                    placeholder={
-                                        profile.country
-                                            ? "— Select State —"
-                                            : "— Select Country first —"
-                                    }
-                                />
-                            )}
-                        </div>
-                        <div className={styles.row}>
-                            {locationFallback ? (
-                                <div className={styles.field}>
-                                    <label className={styles.label}>City</label>
-                                    <input
-                                        className={styles.input}
-                                        value={profile.city}
-                                        onChange={(e) =>
-                                            setProfile((p) => ({
-                                                ...p,
-                                                city: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="City"
-                                    />
-                                </div>
-                            ) : (
-                                <LocationDropdown
-                                    id="city"
-                                    label="City"
-                                    name="city"
-                                    value={profile.city}
-                                    onChange={(e) =>
-                                        setProfile((p) => ({
-                                            ...p,
-                                            city: e.target.value,
-                                        }))
-                                    }
-                                    options={cityOptions}
-                                    disabled={!profile.state}
-                                    loading={loadingCities}
-                                    placeholder={
-                                        profile.state
-                                            ? "— Select City —"
-                                            : "— Select State first —"
-                                    }
-                                />
-                            )}
-                            <div className={styles.field}>
-                                <label className={styles.label}>ZIP Code</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.zip}
-                                    onChange={(e) =>
-                                        setProfile((p) => ({
-                                            ...p,
-                                            zip: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="EC1A 1BB"
-                                />
-                            </div>
-                        </div>
-                    </>
+                    <AddressInfoPanel
+                        profile={profile}
+                        setProfile={setProfile}
+                        countriesData={countriesData}
+                        stateOptions={stateOptions}
+                        cityOptions={cityOptions}
+                        loadingCountries={loadingCountries}
+                        loadingCities={loadingCities}
+                        locationFallback={locationFallback}
+                        handleCountryChange={handleCountryChange}
+                        handleStateChange={handleStateChange}
+                    />
                 )}
 
-                {profileError && <p className={styles.error}>{profileError}</p>}
+                {profileError && (
+                    <p className={styles.error}>{profileError}</p>
+                )}
                 {profileSuccess && (
                     <p className={styles.success}>{profileSuccess}</p>
                 )}
