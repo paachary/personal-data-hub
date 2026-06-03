@@ -1,7 +1,7 @@
 export const PASSWORD_RULES = [
     {
-        test: (v) => v.length >= 8 && v.length <= 20,
-        msg: "Must be 8–20 characters.",
+        test: (v) => v.length >= 8 && v.length <= 50,
+        msg: "Must be 8–50 characters.",
     },
     { test: (v) => /[a-z]/.test(v), msg: "Must contain a lowercase letter." },
     { test: (v) => /[A-Z]/.test(v), msg: "Must contain an uppercase letter." },
