@@ -44,7 +44,7 @@ function openHelpWindow(page = "dashboard") {
             <pre>${content}</pre>
         </body>
         </html>
-    `)}`
+    `)}`,
     );
 }
 
@@ -62,13 +62,14 @@ let mainWindow;
 function createMenu() {
     const isMac = process.platform === "darwin";
     const template = [
-        // ...existing code...
+        ...(isMac ? [{ role: "appMenu" }] : []),
+        { role: "editMenu" },
         {
             label: "Help",
             submenu: [
                 {
                     label: "📖 Documentation & Help",
-                    click: () => openHelpWindow(currentSection), // ← use tracked section
+                    click: () => openHelpWindow(currentSection),
                 },
                 { type: "separator" },
                 { label: `Version ${app.getVersion()}`, enabled: false },
@@ -119,9 +120,9 @@ function createWindow() {
                 "Failed to load:",
                 errorCode,
                 errorDescription,
-                validatedURL
+                validatedURL,
             );
-        }
+        },
     );
 }
 
