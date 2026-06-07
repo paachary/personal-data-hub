@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import styles from "@/components/finance/finance.module.css";
 import fStyles from "@/components/finance/filter.module.css";
 import rStyles from "./report.module.css";
+import UserMonthlyDebitSummary from "@/components/finance/UserMonthlyDebitSummary";
 
 const fmt = (n) =>
     new Intl.NumberFormat("en-IN", {
@@ -17,7 +18,7 @@ function MultiSelect({ label, options, selected, onChange }) {
         onChange(
             selected.includes(val)
                 ? selected.filter((v) => v !== val)
-                : [...selected, val]
+                : [...selected, val],
         );
     return (
         <div className={fStyles.filterBar}>
@@ -57,7 +58,7 @@ function InvestmentReportTable({ data }) {
     const typeOptions = [...new Set(data.map((i) => i.investment_type_code))];
 
     const filtered = useMemo(() => {
-        return data.filter((i) => {
+        let result = data.filter((i) => {
             if (selUsers.length > 0 && !selUsers.includes(i.username))
                 return false;
             if (
@@ -72,11 +73,18 @@ function InvestmentReportTable({ data }) {
                 return false;
             return true;
         });
+        // Sort by bank name, then by user
+        return result.sort((a, b) => {
+            if (a.bank_name !== b.bank_name) {
+                return a.bank_name.localeCompare(b.bank_name);
+            }
+            return a.user_id - b.user_id;
+        });
     }, [data, selUsers, selInstruments, selTypes]);
 
     const total = useMemo(
         () => filtered.reduce((s, i) => s + (i.amount || 0), 0),
-        [filtered]
+        [filtered],
     );
 
     return (
@@ -202,7 +210,7 @@ function MonthlyDebitTable({ data }) {
     const typeOptions = [...new Set(data.map((i) => i.investment_type_code))];
 
     const filtered = useMemo(() => {
-        return data.filter((i) => {
+        let result = data.filter((i) => {
             if (selUsers.length > 0 && !selUsers.includes(i.username))
                 return false;
             if (
@@ -217,11 +225,18 @@ function MonthlyDebitTable({ data }) {
                 return false;
             return true;
         });
+        // Sort by bank name, then by user
+        return result.sort((a, b) => {
+            if (a.bank_name !== b.bank_name) {
+                return a.bank_name.localeCompare(b.bank_name);
+            }
+            return a.user_id - b.user_id;
+        });
     }, [data, selUsers, selInstruments, selTypes]);
 
     const total = useMemo(
         () => filtered.reduce((s, i) => s + (i.amount || 0), 0),
-        [filtered]
+        [filtered],
     );
 
     return (
@@ -351,13 +366,13 @@ export default function FinancePage() {
     // Active investments only
     const activeInvestments = useMemo(
         () => allInvestments.filter((i) => !i.is_closed),
-        [allInvestments]
+        [allInvestments],
     );
 
     // SIP + active only
     const sipInvestments = useMemo(
         () => activeInvestments.filter((i) => i.investment_type_code === "SIP"),
-        [activeInvestments]
+        [activeInvestments],
     );
 
     if (loading) return <p className={styles.empty}>Loading...</p>;
@@ -381,7 +396,16 @@ export default function FinancePage() {
                 <InvestmentReportTable data={activeInvestments} />
             </div>
 
-            {/* ── Report 2: Monthly Debit Summary (SIP) ── */}
+            {/* ── Report 2: Monthly Debit Summary by User ── */}
+            <div className={rStyles.reportSection}>
+                <h3 className={rStyles.reportTitle}>
+                    👥 Monthly Debit Summary by User{" "}
+                    <span className={rStyles.reportBadge}>SIP Only</span>
+                </h3>
+                <UserMonthlyDebitSummary data={sipInvestments} />
+            </div>
+
+            {/* ── Report 3: Monthly Debit Summary (SIP) ── */}
             <div className={rStyles.reportSection}>
                 <h3 className={rStyles.reportTitle}>
                     📅 Monthly Debit Summary{" "}

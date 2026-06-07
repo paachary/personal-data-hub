@@ -70,7 +70,13 @@ export default function InvestmentsSection({
             data = data.filter((i) => selectedUsers.includes(i.username));
         if (filter === "active") data = data.filter((i) => !i.is_closed);
         if (filter === "closed") data = data.filter((i) => i.is_closed);
-        return data;
+        // Sort by bank name, then by user
+        return data.sort((a, b) => {
+            if (a.bank_name !== b.bank_name) {
+                return a.bank_name.localeCompare(b.bank_name);
+            }
+            return a.user_id - b.user_id;
+        });
     }, [investments, selectedUsers, filter]);
 
     const totalAmount = useMemo(
@@ -98,7 +104,8 @@ export default function InvestmentsSection({
         let data = investments.filter((i) => i.username === chartUser);
         if (filter === "active") data = data.filter((i) => !i.is_closed);
         if (filter === "closed") data = data.filter((i) => i.is_closed);
-        return data;
+        // Sort by bank name
+        return data.sort((a, b) => a.bank_name.localeCompare(b.bank_name));
     }, [investments, chartUser, filter]);
 
     // ── Admin "view all" mode ─────────────────────────────────────
