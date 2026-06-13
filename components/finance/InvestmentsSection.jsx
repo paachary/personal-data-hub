@@ -162,6 +162,89 @@ export default function InvestmentsSection({
             .sort();
     }, [investments]);
 
+    // ── Helper functions for DRY principle ──────────────────────────
+    const renderFilterDropdown = (label, options, value, onChange) => (
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.3rem",
+            }}
+        >
+            <label
+                style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 500,
+                    color: "#1a1a1a",
+                }}
+            >
+                {label}
+            </label>
+            <select className={styles.select} value={value} onChange={onChange}>
+                <option value="">All</option>
+                {options.map((opt) => (
+                    <option key={opt} value={opt}>
+                        {opt}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+
+    const renderFilterDropdowns = () => (
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            {renderFilterDropdown("Bank", bankOptions, selectedBank, (e) =>
+                setSelectedBank(e.target.value),
+            )}
+            {renderFilterDropdown(
+                "Instrument",
+                instrumentOptions,
+                selectedInstrument,
+                (e) => setSelectedInstrument(e.target.value),
+            )}
+            {renderFilterDropdown("Type", typeOptions, selectedType, (e) =>
+                setSelectedType(e.target.value),
+            )}
+        </div>
+    );
+
+    const renderTabs = () => (
+        <div className={styles.tabs}>
+            {[
+                { key: "all", label: `All (${investments.length})` },
+                {
+                    key: "active",
+                    label: `Active (${
+                        investments.filter((i) => !i.is_closed).length
+                    })`,
+                },
+                {
+                    key: "closed",
+                    label: `Closed (${
+                        investments.filter((i) => i.is_closed).length
+                    })`,
+                },
+            ].map((t) => (
+                <button
+                    key={t.key}
+                    className={`${styles.tab} ${
+                        filter === t.key ? styles.tabActive : ""
+                    }`}
+                    onClick={() => setFilter(t.key)}
+                >
+                    {t.label}
+                </button>
+            ))}
+        </div>
+    );
+
+    const renderStatusBadge = (isClosed) =>
+        isClosed ? (
+            <span className={styles.closedBadge}>Closed</span>
+        ) : (
+            <span className={styles.activeBadge}>Active</span>
+        );
+
     // ── Admin "view all" mode ─────────────────────────────────────
     if (viewAll) {
         return (
@@ -209,125 +292,9 @@ export default function InvestmentsSection({
                 />
 
                 {/* ── Filter dropdowns ─────────────────────────── */}
-                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.3rem",
-                        }}
-                    >
-                        <label
-                            style={{
-                                fontSize: "0.82rem",
-                                fontWeight: 500,
-                                color: "#1a1a1a",
-                            }}
-                        >
-                            Bank
-                        </label>
-                        <select
-                            className={styles.select}
-                            value={selectedBank}
-                            onChange={(e) => setSelectedBank(e.target.value)}
-                        >
-                            <option value="">All</option>
-                            {bankOptions.map((bank) => (
-                                <option key={bank} value={bank}>
-                                    {bank}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.3rem",
-                        }}
-                    >
-                        <label
-                            style={{
-                                fontSize: "0.82rem",
-                                fontWeight: 500,
-                                color: "#1a1a1a",
-                            }}
-                        >
-                            Instrument
-                        </label>
-                        <select
-                            className={styles.select}
-                            value={selectedInstrument}
-                            onChange={(e) =>
-                                setSelectedInstrument(e.target.value)
-                            }
-                        >
-                            <option value="">All</option>
-                            {instrumentOptions.map((instrument) => (
-                                <option key={instrument} value={instrument}>
-                                    {instrument}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.3rem",
-                        }}
-                    >
-                        <label
-                            style={{
-                                fontSize: "0.82rem",
-                                fontWeight: 500,
-                                color: "#1a1a1a",
-                            }}
-                        >
-                            Type
-                        </label>
-                        <select
-                            className={styles.select}
-                            value={selectedType}
-                            onChange={(e) => setSelectedType(e.target.value)}
-                        >
-                            <option value="">All</option>
-                            {typeOptions.map((type) => (
-                                <option key={type} value={type}>
-                                    {type}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+                {renderFilterDropdowns()}
 
-                <div className={styles.tabs}>
-                    {[
-                        { key: "all", label: `All (${investments.length})` },
-                        {
-                            key: "active",
-                            label: `Active (${
-                                investments.filter((i) => !i.is_closed).length
-                            })`,
-                        },
-                        {
-                            key: "closed",
-                            label: `Closed (${
-                                investments.filter((i) => i.is_closed).length
-                            })`,
-                        },
-                    ].map((t) => (
-                        <button
-                            key={t.key}
-                            className={`${styles.tab} ${
-                                filter === t.key ? styles.tabActive : ""
-                            }`}
-                            onClick={() => setFilter(t.key)}
-                        >
-                            {t.label}
-                        </button>
-                    ))}
-                </div>
+                {renderTabs()}
 
                 {loading ? (
                     <p className={styles.empty}>Loading...</p>
@@ -391,23 +358,7 @@ export default function InvestmentsSection({
                                         <td>{inv.investment_date}</td>
                                         <td>{inv.maturity_date || "—"}</td>
                                         <td>
-                                            {inv.is_closed ? (
-                                                <span
-                                                    className={
-                                                        styles.closedBadge
-                                                    }
-                                                >
-                                                    Closed
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    className={
-                                                        styles.activeBadge
-                                                    }
-                                                >
-                                                    Active
-                                                </span>
-                                            )}
+                                            {renderStatusBadge(inv.is_closed)}
                                         </td>
                                     </tr>
                                 ))}
@@ -469,123 +420,9 @@ export default function InvestmentsSection({
             )}
 
             {/* ── Filter dropdowns ─────────────────────────── */}
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.3rem",
-                    }}
-                >
-                    <label
-                        style={{
-                            fontSize: "0.82rem",
-                            fontWeight: 500,
-                            color: "#1a1a1a",
-                        }}
-                    >
-                        Bank
-                    </label>
-                    <select
-                        className={styles.select}
-                        value={selectedBank}
-                        onChange={(e) => setSelectedBank(e.target.value)}
-                    >
-                        <option value="">All</option>
-                        {bankOptions.map((bank) => (
-                            <option key={bank} value={bank}>
-                                {bank}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.3rem",
-                    }}
-                >
-                    <label
-                        style={{
-                            fontSize: "0.82rem",
-                            fontWeight: 500,
-                            color: "#1a1a1a",
-                        }}
-                    >
-                        Instrument
-                    </label>
-                    <select
-                        className={styles.select}
-                        value={selectedInstrument}
-                        onChange={(e) => setSelectedInstrument(e.target.value)}
-                    >
-                        <option value="">All</option>
-                        {instrumentOptions.map((instrument) => (
-                            <option key={instrument} value={instrument}>
-                                {instrument}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.3rem",
-                    }}
-                >
-                    <label
-                        style={{
-                            fontSize: "0.82rem",
-                            fontWeight: 500,
-                            color: "#1a1a1a",
-                        }}
-                    >
-                        Type
-                    </label>
-                    <select
-                        className={styles.select}
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                    >
-                        <option value="">All</option>
-                        {typeOptions.map((type) => (
-                            <option key={type} value={type}>
-                                {type}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </div>
+            {renderFilterDropdowns()}
 
-            <div className={styles.tabs}>
-                {[
-                    { key: "all", label: `All (${investments.length})` },
-                    {
-                        key: "active",
-                        label: `Active (${
-                            investments.filter((i) => !i.is_closed).length
-                        })`,
-                    },
-                    {
-                        key: "closed",
-                        label: `Closed (${
-                            investments.filter((i) => i.is_closed).length
-                        })`,
-                    },
-                ].map((t) => (
-                    <button
-                        key={t.key}
-                        className={`${styles.tab} ${
-                            filter === t.key ? styles.tabActive : ""
-                        }`}
-                        onClick={() => setFilter(t.key)}
-                    >
-                        {t.label}
-                    </button>
-                ))}
-            </div>
+            {renderTabs()}
 
             {loading ? (
                 <p className={styles.empty}>Loading...</p>
@@ -642,21 +479,7 @@ export default function InvestmentsSection({
                                     <td>{fmt(inv.amount)}</td>
                                     <td>{inv.investment_date}</td>
                                     <td>{inv.maturity_date || "—"}</td>
-                                    <td>
-                                        {inv.is_closed ? (
-                                            <span
-                                                className={styles.closedBadge}
-                                            >
-                                                Closed
-                                            </span>
-                                        ) : (
-                                            <span
-                                                className={styles.activeBadge}
-                                            >
-                                                Active
-                                            </span>
-                                        )}
-                                    </td>
+                                    <td>{renderStatusBadge(inv.is_closed)}</td>
                                     {!isAdmin && (
                                         <td>
                                             <div className={styles.cardActions}>
