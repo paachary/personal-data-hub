@@ -256,6 +256,15 @@
     color: #e2e8f0;
 }
 
+.table tfoot td {
+    background: #051d73;
+    color: #dfe6ee;
+}
+
+.table tfoot tr {
+    border-top: 2px solid #2a3352;
+}
+
 /* ── Buttons ────────────────────────────────────────────── */
 .btn {
     padding: 0.45rem 1rem;

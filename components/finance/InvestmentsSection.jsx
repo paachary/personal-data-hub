@@ -27,6 +27,10 @@ export default function InvestmentsSection({
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [chartUser, setChartUser] = useState("");
 
+    const [selectedBank, setSelectedBank] = useState("");
+    const [selectedInstrument, setSelectedInstrument] = useState("");
+    const [selectedType, setSelectedType] = useState("");
+
     const load = useCallback(async () => {
         setLoading(true);
         try {
@@ -70,6 +74,12 @@ export default function InvestmentsSection({
             data = data.filter((i) => selectedUsers.includes(i.username));
         if (filter === "active") data = data.filter((i) => !i.is_closed);
         if (filter === "closed") data = data.filter((i) => i.is_closed);
+        if (selectedBank)
+            data = data.filter((i) => i.bank_name === selectedBank);
+        if (selectedInstrument)
+            data = data.filter((i) => i.instrument_code === selectedInstrument);
+        if (selectedType)
+            data = data.filter((i) => i.investment_type_code === selectedType);
         // Sort by bank name, then by user
         return data.sort((a, b) => {
             if (a.bank_name !== b.bank_name) {
@@ -77,7 +87,14 @@ export default function InvestmentsSection({
             }
             return a.user_id - b.user_id;
         });
-    }, [investments, selectedUsers, filter]);
+    }, [
+        investments,
+        selectedUsers,
+        filter,
+        selectedBank,
+        selectedInstrument,
+        selectedType,
+    ]);
 
     const totalAmount = useMemo(
         () => filtered.reduce((sum, inv) => sum + (inv.amount || 0), 0),
@@ -107,6 +124,43 @@ export default function InvestmentsSection({
         // Sort by bank name
         return data.sort((a, b) => a.bank_name.localeCompare(b.bank_name));
     }, [investments, chartUser, filter]);
+
+    // Derive sorted unique banks, instruments, and types
+    const bankOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.bank_name)) return false;
+                seen.add(i.bank_name);
+                return true;
+            })
+            .map((i) => i.bank_name)
+            .sort();
+    }, [investments]);
+
+    const instrumentOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.instrument_code)) return false;
+                seen.add(i.instrument_code);
+                return true;
+            })
+            .map((i) => i.instrument_code)
+            .sort();
+    }, [investments]);
+
+    const typeOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.investment_type_code)) return false;
+                seen.add(i.investment_type_code);
+                return true;
+            })
+            .map((i) => i.investment_type_code)
+            .sort();
+    }, [investments]);
 
     // ── Admin "view all" mode ─────────────────────────────────────
     if (viewAll) {
@@ -153,6 +207,99 @@ export default function InvestmentsSection({
                     selectedUsers={selectedUsers}
                     onChange={setSelectedUsers}
                 />
+
+                {/* ── Filter dropdowns ─────────────────────────── */}
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.3rem",
+                        }}
+                    >
+                        <label
+                            style={{
+                                fontSize: "0.82rem",
+                                fontWeight: 500,
+                                color: "#1a1a1a",
+                            }}
+                        >
+                            Bank
+                        </label>
+                        <select
+                            className={styles.select}
+                            value={selectedBank}
+                            onChange={(e) => setSelectedBank(e.target.value)}
+                        >
+                            <option value="">All</option>
+                            {bankOptions.map((bank) => (
+                                <option key={bank} value={bank}>
+                                    {bank}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.3rem",
+                        }}
+                    >
+                        <label
+                            style={{
+                                fontSize: "0.82rem",
+                                fontWeight: 500,
+                                color: "#1a1a1a",
+                            }}
+                        >
+                            Instrument
+                        </label>
+                        <select
+                            className={styles.select}
+                            value={selectedInstrument}
+                            onChange={(e) =>
+                                setSelectedInstrument(e.target.value)
+                            }
+                        >
+                            <option value="">All</option>
+                            {instrumentOptions.map((instrument) => (
+                                <option key={instrument} value={instrument}>
+                                    {instrument}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.3rem",
+                        }}
+                    >
+                        <label
+                            style={{
+                                fontSize: "0.82rem",
+                                fontWeight: 500,
+                                color: "#1a1a1a",
+                            }}
+                        >
+                            Type
+                        </label>
+                        <select
+                            className={styles.select}
+                            value={selectedType}
+                            onChange={(e) => setSelectedType(e.target.value)}
+                        >
+                            <option value="">All</option>
+                            {typeOptions.map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
 
                 <div className={styles.tabs}>
                     {[
@@ -272,7 +419,7 @@ export default function InvestmentsSection({
                                         style={{
                                             textAlign: "right",
                                             fontWeight: 800,
-                                            color: "#dfe6ee",
+
                                             padding: "0.75rem 1rem",
                                         }}
                                     >
@@ -281,7 +428,7 @@ export default function InvestmentsSection({
                                     <td
                                         style={{
                                             fontWeight: 900,
-                                            color: "#e2e8f0",
+
                                             padding: "0.75rem 1rem",
                                         }}
                                     >
@@ -320,6 +467,97 @@ export default function InvestmentsSection({
             {!loading && investments.length > 0 && (
                 <InvestmentDistributionChart investments={filtered} />
             )}
+
+            {/* ── Filter dropdowns ─────────────────────────── */}
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.3rem",
+                    }}
+                >
+                    <label
+                        style={{
+                            fontSize: "0.82rem",
+                            fontWeight: 500,
+                            color: "#1a1a1a",
+                        }}
+                    >
+                        Bank
+                    </label>
+                    <select
+                        className={styles.select}
+                        value={selectedBank}
+                        onChange={(e) => setSelectedBank(e.target.value)}
+                    >
+                        <option value="">All</option>
+                        {bankOptions.map((bank) => (
+                            <option key={bank} value={bank}>
+                                {bank}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.3rem",
+                    }}
+                >
+                    <label
+                        style={{
+                            fontSize: "0.82rem",
+                            fontWeight: 500,
+                            color: "#1a1a1a",
+                        }}
+                    >
+                        Instrument
+                    </label>
+                    <select
+                        className={styles.select}
+                        value={selectedInstrument}
+                        onChange={(e) => setSelectedInstrument(e.target.value)}
+                    >
+                        <option value="">All</option>
+                        {instrumentOptions.map((instrument) => (
+                            <option key={instrument} value={instrument}>
+                                {instrument}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.3rem",
+                    }}
+                >
+                    <label
+                        style={{
+                            fontSize: "0.82rem",
+                            fontWeight: 500,
+                            color: "#1a1a1a",
+                        }}
+                    >
+                        Type
+                    </label>
+                    <select
+                        className={styles.select}
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                    >
+                        <option value="">All</option>
+                        {typeOptions.map((type) => (
+                            <option key={type} value={type}>
+                                {type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
             <div className={styles.tabs}>
                 {[
@@ -451,7 +689,6 @@ export default function InvestmentsSection({
                                     style={{
                                         textAlign: "right",
                                         fontWeight: 800,
-                                        color: "#dfe6ee",
                                         padding: "0.75rem 1rem",
                                     }}
                                 >
@@ -460,7 +697,6 @@ export default function InvestmentsSection({
                                 <td
                                     style={{
                                         fontWeight: 900,
-                                        color: "#e2e8f0",
                                         padding: "0.75rem 1rem",
                                     }}
                                 >
