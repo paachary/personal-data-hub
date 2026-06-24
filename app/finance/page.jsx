@@ -186,6 +186,18 @@ function ReportTable({ data, columns, footerLabel, emptyMessage }) {
 export default function FinancePage() {
     const [allInvestments, setAllInvestments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [collapsed, setCollapsed] = useState({
+        active: true,
+        debitByUser: false,
+        debitSip: true,
+    });
+
+    const toggleSection = (section) => {
+        setCollapsed((prev) => ({
+            ...prev,
+            [section]: !prev[section],
+        }));
+    };
 
     useEffect(() => {
         window.electronAPI.investments
@@ -349,38 +361,68 @@ export default function FinancePage() {
 
             {/* ── Report 1: All Active Investments ── */}
             <div className={rStyles.reportSection}>
-                <h3 className={rStyles.reportTitle}>
-                    📊 All Active Investments
-                </h3>
-                <ReportTable
-                    data={activeInvestments}
-                    columns={investmentColumns}
-                    footerLabel="Total Invested"
-                    emptyMessage="No investments match the filters."
-                />
+                <button
+                    className={rStyles.reportHeader}
+                    onClick={() => toggleSection("active")}
+                >
+                    <h3 className={rStyles.reportTitle}>
+                        📊 All Active Investments
+                    </h3>
+                    <span className={rStyles.collapseIcon}>
+                        {collapsed.active ? "▶" : "▼"}
+                    </span>
+                </button>
+                {!collapsed.active && (
+                    <ReportTable
+                        data={activeInvestments}
+                        columns={investmentColumns}
+                        footerLabel="Total Invested"
+                        emptyMessage="No investments match the filters."
+                    />
+                )}
             </div>
 
             {/* ── Report 2: Monthly Debit Summary by User ── */}
             <div className={rStyles.reportSection}>
-                <h3 className={rStyles.reportTitle}>
-                    👥 Monthly Debit Summary by User{" "}
-                    <span className={rStyles.reportBadge}>SIP Only</span>
-                </h3>
-                <UserMonthlyDebitSummary data={sipInvestments} />
+                <button
+                    className={rStyles.reportHeader}
+                    onClick={() => toggleSection("debitByUser")}
+                >
+                    <h3 className={rStyles.reportTitle}>
+                        👥 Monthly Debit Summary by User{" "}
+                        <span className={rStyles.reportBadge}>SIP Only</span>
+                    </h3>
+                    <span className={rStyles.collapseIcon}>
+                        {collapsed.debitByUser ? "▶" : "▼"}
+                    </span>
+                </button>
+                {!collapsed.debitByUser && (
+                    <UserMonthlyDebitSummary data={sipInvestments} />
+                )}
             </div>
 
             {/* ── Report 3: Monthly Debit Summary (SIP) ── */}
             <div className={rStyles.reportSection}>
-                <h3 className={rStyles.reportTitle}>
-                    📅 Monthly Debit Summary{" "}
-                    <span className={rStyles.reportBadge}>SIP Only</span>
-                </h3>
-                <ReportTable
-                    data={sipInvestments}
-                    columns={sipColumns}
-                    footerLabel="Total Monthly Debit"
-                    emptyMessage="No SIP investments found."
-                />
+                <button
+                    className={rStyles.reportHeader}
+                    onClick={() => toggleSection("debitSip")}
+                >
+                    <h3 className={rStyles.reportTitle}>
+                        📅 Monthly Debit Summary{" "}
+                        <span className={rStyles.reportBadge}>SIP Only</span>
+                    </h3>
+                    <span className={rStyles.collapseIcon}>
+                        {collapsed.debitSip ? "▶" : "▼"}
+                    </span>
+                </button>
+                {!collapsed.debitSip && (
+                    <ReportTable
+                        data={sipInvestments}
+                        columns={sipColumns}
+                        footerLabel="Total Monthly Debit"
+                        emptyMessage="No SIP investments found."
+                    />
+                )}
             </div>
         </section>
     );
