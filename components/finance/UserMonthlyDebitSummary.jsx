@@ -16,14 +16,14 @@ export default function UserMonthlyDebitSummary({ data }) {
         const userBankMap = {};
 
         data.forEach((inv) => {
-            const key = `${inv.user_id}_${inv.bank_id}`;
+            const key = `${inv.username}_${inv.bank_name}`;
             if (!userBankMap[key]) {
                 userBankMap[key] = {
                     user_id: inv.user_id,
                     first_name: inv.first_name,
                     last_name: inv.last_name,
                     username: inv.username,
-                    bank_id: inv.bank_id,
+                    bank_id: inv.id,
                     bank_name: inv.bank_name,
                     total: 0,
                     count: 0,
@@ -33,10 +33,10 @@ export default function UserMonthlyDebitSummary({ data }) {
             userBankMap[key].count += 1;
         });
 
-        // Convert to array and sort by bank name, then by total descending
+        // Convert to array and sort by username, then by total descending
         return Object.values(userBankMap).sort((a, b) => {
-            if (a.bank_name !== b.bank_name) {
-                return a.bank_name.localeCompare(b.bank_name);
+            if (a.username !== b.username) {
+                return a.username.localeCompare(b.username);
             }
             return b.total - a.total;
         });
