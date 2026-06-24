@@ -38,7 +38,7 @@ export default function UserMonthlyDebitSummary({ data }) {
             if (a.username !== b.username) {
                 return a.username.localeCompare(b.username);
             }
-            return b.total - a.total;
+            return b.bank_name.localeCompare(a.bank_name);
         });
     }, [data]);
 
