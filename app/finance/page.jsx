@@ -77,12 +77,12 @@ function ReportTable({ data, columns, footerLabel, emptyMessage }) {
                 return false;
             return true;
         });
-        // Sort by bank name, then by user
+        // Sort by username, then by bank_name
         return result.sort((a, b) => {
-            if (a.bank_name !== b.bank_name) {
-                return a.bank_name.localeCompare(b.bank_name);
+            if (a.username !== b.username) {
+                return a.username.localeCompare(b.username);
             }
-            return a.user_id - b.user_id;
+            return a.bank_name.localeCompare(b.bank_name);
         });
     }, [data, selUsers, selBanks, selInstruments, selTypes]);
 
