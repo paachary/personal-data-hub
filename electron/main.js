@@ -63,7 +63,19 @@ function createMenu() {
     const isMac = process.platform === "darwin";
     const template = [
         ...(isMac ? [{ role: "appMenu" }] : []),
-        { role: "editMenu" },
+        {
+            label: "Edit",
+            submenu: [
+                { role: "undo" },
+                { role: "redo" },
+                { type: "separator" },
+                { role: "cut" },
+                { role: "copy" },
+                { role: "paste" },
+                { role: "selectAll" },
+            ],
+        },
+
         {
             label: "Help",
             submenu: [
