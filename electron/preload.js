@@ -99,4 +99,19 @@ contextBridge.exposeInMainWorld("electronAPI", {
         syncVaultReminders: (entries) =>
             ipcRenderer.invoke("todos:syncVaultReminders", entries),
     },
+
+    finance: {
+        selectStatementFile: (data) =>
+            ipcRenderer.invoke("finance:selectStatementFile", data),
+        importStatements: (data) =>
+            ipcRenderer.invoke("finance:importStatements", data),
+        getStatements: (data) =>
+            ipcRenderer.invoke("finance:getStatements", data),
+        getStatementTransactions: (data) =>
+            ipcRenderer.invoke("finance:getStatementTransactions", data),
+        getTrendData: (data) =>
+            ipcRenderer.invoke("finance:getTrendData", data),
+        clearStatementData: (data) =>
+            ipcRenderer.invoke("finance:clearStatementData", data),
+    },
 });

@@ -134,7 +134,7 @@ export default function BanksSection({ userId, isAdmin, viewAll = false }) {
                     </p>
                 </div>
 
-                {/* Admin can add banks; regular users can only add accounts */}
+                {/* Admin can add banks; regular users can add accounts or import statements */}
                 {isAdmin && tab === "banks" && (
                     <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
@@ -144,12 +144,14 @@ export default function BanksSection({ userId, isAdmin, viewAll = false }) {
                     </button>
                 )}
                 {!isAdmin && tab === "accounts" && (
-                    <button
-                        className={`${styles.btn} ${styles.btnPrimary}`}
-                        onClick={() => setAccountModal("add")}
-                    >
-                        + Add Account
-                    </button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={() => setAccountModal("add")}
+                        >
+                            + Add Account
+                        </button>
+                    </div>
                 )}
             </div>
 
