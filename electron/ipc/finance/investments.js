@@ -38,11 +38,11 @@ function registerInvestmentHandlers() {
             const db = getFinanceDb();
             const result = db
                 .prepare(
-                    `INSERT OR IGNORE INTO instrument_types (code, description) VALUES (?, ?)`
+                    `INSERT OR IGNORE INTO instrument_types (code, description) VALUES (?, ?)`,
                 )
                 .run(code.toUpperCase(), description);
             return { success: true, id: result.lastInsertRowid };
-        }
+        },
     );
 
     // ── Investments CRUD ──────────────────────────────────
@@ -75,7 +75,7 @@ function registerInvestmentHandlers() {
             JOIN bank_master         bm  ON uba.bank_master_id     = bm.id
             WHERE i.user_id = ?
             ORDER BY i.investment_date DESC
-        `
+        `,
             )
             .all(user_id);
     });
@@ -101,7 +101,7 @@ function registerInvestmentHandlers() {
                 (investment_ref_id, user_id, account_id, instrument_type_id, investment_type_id,
                  investment_name, amount, investment_date, maturity_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `
+        `,
             )
             .run(
                 investment_ref_id,
@@ -112,7 +112,7 @@ function registerInvestmentHandlers() {
                 investment_name,
                 amount,
                 investment_date,
-                maturity_date || null
+                maturity_date || null,
             );
         return { success: true, id: result.lastInsertRowid };
     });
@@ -137,7 +137,7 @@ function registerInvestmentHandlers() {
                 investment_name=?, amount=?, investment_date=?, maturity_date=?,
                 updated_at=datetime('now')
             WHERE id=?
-        `
+        `,
         ).run(
             account_id,
             instrument_type_id,
@@ -146,7 +146,7 @@ function registerInvestmentHandlers() {
             amount,
             investment_date,
             maturity_date || null,
-            id
+            id,
         );
         return { success: true };
     });
@@ -162,11 +162,11 @@ function registerInvestmentHandlers() {
             requireAdmin();
             getFinanceDb()
                 .prepare(
-                    `UPDATE instrument_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`
+                    `UPDATE instrument_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`,
                 )
                 .run(code, description, id);
             return { success: true };
-        }
+        },
     );
 
     ipcMain.handle("finance:deleteInstrumentType", (event, id) => {
@@ -183,11 +183,11 @@ function registerInvestmentHandlers() {
             requireAdmin();
             const result = getFinanceDb()
                 .prepare(
-                    `INSERT OR IGNORE INTO investment_types (code, description) VALUES (?, ?)`
+                    `INSERT OR IGNORE INTO investment_types (code, description) VALUES (?, ?)`,
                 )
                 .run(code, description);
             return { success: true, id: result.lastInsertRowid };
-        }
+        },
     );
 
     ipcMain.handle(
@@ -196,11 +196,11 @@ function registerInvestmentHandlers() {
             requireAdmin();
             getFinanceDb()
                 .prepare(
-                    `UPDATE investment_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`
+                    `UPDATE investment_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`,
                 )
                 .run(code, description, id);
             return { success: true };
-        }
+        },
     );
 
     ipcMain.handle("finance:deleteInvestmentType", (event, id) => {
@@ -256,7 +256,7 @@ function registerInvestmentHandlers() {
             JOIN investment_types    it ON inv.investment_type_id  = it.id
             JOIN masterdb.users       u ON inv.user_id             = u.id
             ORDER BY u.username, inv.investment_date DESC
-        `
+        `,
             )
             .all();
 
