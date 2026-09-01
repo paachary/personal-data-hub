@@ -23,6 +23,7 @@ export default function InvestmentsSection({
     const [filter, setFilter] = useState("all");
     const [modal, setModal] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
 
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [chartUser, setChartUser] = useState("");
@@ -66,6 +67,34 @@ export default function InvestmentsSection({
         if (!confirm("Delete this investment?")) return;
         await window.electronAPI.investments.delete(id);
         load();
+    };
+
+    const handleExport = async () => {
+        if (filtered.length === 0) {
+            alert("No investments to export. Apply filters and try again.");
+            return;
+        }
+
+        setExporting(true);
+        try {
+            const result = await window.electronAPI.investments.exportToExcel({
+                investments: filtered,
+                isAdmin: viewAll,
+            });
+
+            if (result.success) {
+                alert(
+                    `✅ Export successful! File saved.\n\n${result.message}`
+                );
+            } else {
+                alert(`❌ Export failed: ${result.error}`);
+            }
+        } catch (err) {
+            console.error("[handleExport]", err);
+            alert(`❌ Export error: ${err.message}`);
+        } finally {
+            setExporting(false);
+        }
     };
 
     const filtered = useMemo(() => {
@@ -258,6 +287,14 @@ export default function InvestmentsSection({
                             Read-only view of all users&apos; investments
                         </p>
                     </div>
+                    <button
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={handleExport}
+                        disabled={exporting || filtered.length === 0}
+                        title="Export visible investments to Excel"
+                    >
+                        {exporting ? "Exporting..." : "📥 Export to Excel"}
+                    </button>
                 </div>
 
                 {/* ── Per-user chart ───────────────────────────── */}
@@ -405,14 +442,24 @@ export default function InvestmentsSection({
                         Track all your investments across instruments
                     </p>
                 </div>
-                {!isAdmin && (
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                    {!isAdmin && (
+                        <button
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={() => setModal("add")}
+                        >
+                            + Add Investment
+                        </button>
+                    )}
                     <button
-                        className={`${styles.btn} ${styles.btnPrimary}`}
-                        onClick={() => setModal("add")}
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={handleExport}
+                        disabled={exporting || filtered.length === 0}
+                        title="Export visible investments to Excel"
                     >
-                        + Add Investment
+                        {exporting ? "Exporting..." : "📥 Export to Excel"}
                     </button>
-                )}
+                </div>
             </div>
 
             {!loading && investments.length > 0 && (

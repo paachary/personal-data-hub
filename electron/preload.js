@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
         add: (data) => ipcRenderer.invoke("investments:add", data),
         update: (data) => ipcRenderer.invoke("investments:update", data),
         delete: (id) => ipcRenderer.invoke("investments:delete", id),
+        exportToExcel: (data) =>
+            ipcRenderer.invoke("investments:exportToExcel", data),
         getInstrumentTypes: () =>
             ipcRenderer.invoke("finance:getInstrumentTypes"),
         addInstrumentType: (data) =>
