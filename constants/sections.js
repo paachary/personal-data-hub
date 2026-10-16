@@ -15,6 +15,7 @@ export const NAV_SECTIONS = [
         group: "Finance",
         items: [
             { id: "banks", label: "🏦 Banks & Accounts" },
+            { id: "statements", label: "📊 Statements" },
             { id: "investments", label: "📈 Investments" },
         ],
     },
@@ -51,7 +52,8 @@ export const SECTION_SUBTITLES = {
     "settings-instrument-types": "Manage instrument types (FD, MF, LIC...).",
     "settings-investment-types": "Manage investment types (SIP, SWP...).",
     "mfa-help": "Learn how to use Two-Factor Authentication.",
-    todos: "Your to-do list and reminders.", // ← Add
+    todos: "Your to-do list and reminders.",
+    statements: "View and import bank statements, analyze spending trends.",
 };
 
 export const SECTION_TITLES = {
@@ -63,8 +65,9 @@ export const SECTION_TITLES = {
     "settings-banks": "🏛️ Bank Master",
     "settings-instrument-types": "📊 Instrument Types",
     "settings-investment-types": "🔄 Investment Types",
-    "mfa-help": "🔐 MFA Guide", // ← add
-    todos: "📋 To-Do & Reminders", // ← Add
+    "mfa-help": "🔐 MFA Guide",
+    todos: "📋 To-Do & Reminders",
+    statements: "📊 Statements",
 };
 
 export const DASHBOARD_STATS = [

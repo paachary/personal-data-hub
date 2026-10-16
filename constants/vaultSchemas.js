@@ -263,6 +263,71 @@ export const VAULT_SCHEMAS = {
             },
         ],
     },
+    visa: {
+        label: "Visa",
+        icon: "🛃",
+        displayField: "visaType",
+        fields: [
+            {
+                name: "country",
+                label: "Issuing Country",
+                type: "text",
+            },
+            {
+                name: "visaNumber",
+                label: "Visa Number",
+                type: "text",
+                required: true,
+                masked: true,
+            },
+            {
+                name: "visaType",
+                label: "Visa Type",
+                type: "text",
+            },
+            {
+                name: "controlNumber",
+                label: "Control Number",
+                type: "text",
+            },
+            {
+                name: "issueDate",
+                label: "Issue Date",
+                type: "date",
+            },
+            {
+                name: "expiryDate",
+                label: "Expiry Date",
+                type: "date",
+            },
+        ],
+    },
+    customExpiry: {
+        label: "Custom with Expiry",
+        icon: "⏳",
+        displayField: "label",
+        fields: [
+            { name: "label", label: "Label", type: "text", required: true },
+            { name: "description", label: "Description", type: "text" },
+            {
+                name: "attributes",
+                label: "Custom Attributes",
+                type: "kvlist",
+            },
+            {
+                name: "issueDate",
+                label: "Issue Date",
+                type: "date",
+                required: true,
+            },
+            {
+                name: "expiryDate",
+                label: "Expiry Date",
+                type: "date",
+                required: true,
+            },
+        ],
+    },
     custom: {
         label: "Custom",
         icon: "🔐",

@@ -15,6 +15,7 @@ import SettingsInvestmentTypes from "@/components/settings/SettingsInvestmentTyp
 import SettingsGeneral from "@/components/settings/SettingsGeneral";
 import AdminRestrictedSection from "@/components/common/AdminRestrictedSection";
 import FinancePage from "@/app/finance/page";
+import StatementsAnalyticsSection from "@/components/finance/StatementsAnalyticsSection";
 import AdminUsersSection from "@/components/admin/AdminUsersSection";
 import MfaHelpPage from "@/app/auth/mfa-help/page";
 import TodosSection from "@/components/todos/TodosSection"; // ← Add
@@ -123,6 +124,12 @@ export default function DashboardPage() {
                 {activeSection === "banks" && !isAdmin && (
                     <BanksSection userId={userId} isAdmin={isAdmin} />
                 )}
+                {activeSection === "statements" && !isAdmin && (
+                    <StatementsAnalyticsSection
+                        userId={userId}
+                        isAdmin={false}
+                    />
+                )}
                 {/* Admin-only settings */}
                 {activeSection === "settings" && <SettingsGeneral />}
                 {activeSection === "settings-banks" && isAdmin && (
@@ -134,7 +141,7 @@ export default function DashboardPage() {
                 {activeSection === "settings-investment-types" && isAdmin && (
                     <SettingsInvestmentTypes />
                 )}
-                {/* Admin: view all users */}
+                {/* Admin: Finance sections */}
                 {activeSection === "admin-all-banks" && isAdmin && (
                     <BanksSection userId={null} isAdmin={true} viewAll={true} />
                 )}
@@ -166,6 +173,7 @@ export default function DashboardPage() {
                     "todos",
                     "investments",
                     "banks",
+                    "statements",
                     "admin-all-banks",
                     "admin-all-investments",
                     "settings",

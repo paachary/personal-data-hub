@@ -149,10 +149,10 @@ async function svgToPng(svgStr, size) {
     fs.mkdirSync(BUILD_DIR, { recursive: true });
     fs.mkdirSync(ICONSET_DIR, { recursive: true });
 
-    console.log("Generating 1024×1024 master PNG…");
-    const master = await svgToPng(svg, SIZE);
-    fs.writeFileSync(path.join(BUILD_DIR, "icon.png"), master);
-    console.log("  ✓ build/icon.png");
+    // console.log("Generating 1024×1024 master PNG…");
+    // const master = await svgToPng(svg, SIZE);
+    // fs.writeFileSync(path.join(BUILD_DIR, "icon.png"), master);
+    // console.log("  ✓ build/icon.png");
 
     // ── macOS iconset sizes ─────────────────────────────────────────────
     const macSizes = [
@@ -168,27 +168,27 @@ async function svgToPng(svgStr, size) {
         { file: "icon_512x512@2x.png", size: 1024 },
     ];
 
-    console.log("Generating macOS iconset…");
+    // console.log("Generating macOS iconset…");
     for (const { file, size } of macSizes) {
         const buf = await svgToPng(svg, size);
         fs.writeFileSync(path.join(ICONSET_DIR, file), buf);
-        console.log(`  ✓ ${file}`);
+        // console.log(`  ✓ ${file}`);
     }
 
     // ── .icns via iconutil ──────────────────────────────────────────────
-    console.log("Building icon.icns via iconutil…");
+    // console.log("Building icon.icns via iconutil…");
     execSync(
         `iconutil -c icns "${ICONSET_DIR}" -o "${path.join(BUILD_DIR, "icon.icns")}"`,
     );
-    console.log("  ✓ build/icon.icns");
+    // console.log("  ✓ build/icon.icns");
 
     // ── Windows .ico (multi-size) ───────────────────────────────────────
-    console.log("Building icon.ico…");
+    // console.log("Building icon.ico…");
     const icoSizes = [16, 24, 32, 48, 64, 128, 256];
     const icoBuffers = await Promise.all(icoSizes.map((s) => svgToPng(svg, s)));
     const icoBuffer = await pngToIco(icoBuffers);
     fs.writeFileSync(path.join(BUILD_DIR, "icon.ico"), icoBuffer);
-    console.log("  ✓ build/icon.ico");
+    // console.log("  ✓ build/icon.ico");
 
-    console.log("\nDone. All icon assets written to build/");
+    // console.log("\nDone. All icon assets written to build/");
 })();

@@ -1,8 +1,14 @@
-const { ipcMain } = require("electron");
-const { getMasterDb } = require("../../../database/master/masterdb"); // ← add
-
+const { ipcMain, dialog } = require("electron");
+const path = require("path");
+const fs = require("fs");
+const XLSX = require("xlsx");
+const { getMasterDb } = require("../../../database/master/masterdb");
 const { getFinanceDb } = require("../../../database/finance/financeDb");
 const { getSession } = require("../auth.js");
+const {
+    createInvestmentsWorkbook,
+    generateFilename,
+} = require("../../../lib/exporters/investmentsExporter");
 
 function requireAdmin() {
     const session = getSession();
@@ -32,11 +38,11 @@ function registerInvestmentHandlers() {
             const db = getFinanceDb();
             const result = db
                 .prepare(
-                    `INSERT OR IGNORE INTO instrument_types (code, description) VALUES (?, ?)`
+                    `INSERT OR IGNORE INTO instrument_types (code, description) VALUES (?, ?)`,
                 )
                 .run(code.toUpperCase(), description);
             return { success: true, id: result.lastInsertRowid };
-        }
+        },
     );
 
     // ── Investments CRUD ──────────────────────────────────
@@ -69,7 +75,7 @@ function registerInvestmentHandlers() {
             JOIN bank_master         bm  ON uba.bank_master_id     = bm.id
             WHERE i.user_id = ?
             ORDER BY i.investment_date DESC
-        `
+        `,
             )
             .all(user_id);
     });
@@ -95,7 +101,7 @@ function registerInvestmentHandlers() {
                 (investment_ref_id, user_id, account_id, instrument_type_id, investment_type_id,
                  investment_name, amount, investment_date, maturity_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `
+        `,
             )
             .run(
                 investment_ref_id,
@@ -106,7 +112,7 @@ function registerInvestmentHandlers() {
                 investment_name,
                 amount,
                 investment_date,
-                maturity_date || null
+                maturity_date || null,
             );
         return { success: true, id: result.lastInsertRowid };
     });
@@ -131,7 +137,7 @@ function registerInvestmentHandlers() {
                 investment_name=?, amount=?, investment_date=?, maturity_date=?,
                 updated_at=datetime('now')
             WHERE id=?
-        `
+        `,
         ).run(
             account_id,
             instrument_type_id,
@@ -140,7 +146,7 @@ function registerInvestmentHandlers() {
             amount,
             investment_date,
             maturity_date || null,
-            id
+            id,
         );
         return { success: true };
     });
@@ -156,11 +162,11 @@ function registerInvestmentHandlers() {
             requireAdmin();
             getFinanceDb()
                 .prepare(
-                    `UPDATE instrument_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`
+                    `UPDATE instrument_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`,
                 )
                 .run(code, description, id);
             return { success: true };
-        }
+        },
     );
 
     ipcMain.handle("finance:deleteInstrumentType", (event, id) => {
@@ -177,11 +183,11 @@ function registerInvestmentHandlers() {
             requireAdmin();
             const result = getFinanceDb()
                 .prepare(
-                    `INSERT OR IGNORE INTO investment_types (code, description) VALUES (?, ?)`
+                    `INSERT OR IGNORE INTO investment_types (code, description) VALUES (?, ?)`,
                 )
                 .run(code, description);
             return { success: true, id: result.lastInsertRowid };
-        }
+        },
     );
 
     ipcMain.handle(
@@ -190,11 +196,11 @@ function registerInvestmentHandlers() {
             requireAdmin();
             getFinanceDb()
                 .prepare(
-                    `UPDATE investment_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`
+                    `UPDATE investment_types SET code=?, description=?, updated_at=datetime('now') WHERE id=?`,
                 )
                 .run(code, description, id);
             return { success: true };
-        }
+        },
     );
 
     ipcMain.handle("finance:deleteInvestmentType", (event, id) => {
@@ -216,7 +222,18 @@ function registerInvestmentHandlers() {
             .prepare(
                 `
             SELECT
-                inv.*,
+                inv.id,
+                inv.investment_ref_id,
+                inv.user_id,
+                inv.account_id,
+                inv.instrument_type_id,
+                inv.investment_type_id,
+                inv.investment_name,
+                inv.amount,
+                inv.investment_date,
+                inv.maturity_date,
+                inv.created_at,
+                inv.updated_at,
                 uba.account_number,
                 uba.account_type,
                 bm.bank_name,
@@ -226,7 +243,12 @@ function registerInvestmentHandlers() {
                 it.code   AS investment_type_code,
                 u.username,
                 u.first_name,
-                u.last_name
+                u.last_name,
+                CASE
+                    WHEN inv.maturity_date IS NOT NULL
+                     AND inv.maturity_date < date('now') THEN 1
+                    ELSE 0
+                END AS is_closed
             FROM investments inv
             JOIN user_bank_accounts uba ON inv.account_id          = uba.id
             JOIN bank_master         bm ON uba.bank_master_id      = bm.id
@@ -234,12 +256,66 @@ function registerInvestmentHandlers() {
             JOIN investment_types    it ON inv.investment_type_id  = it.id
             JOIN masterdb.users       u ON inv.user_id             = u.id
             ORDER BY u.username, inv.investment_date DESC
-        `
+        `,
             )
             .all();
 
         financeDb.exec(`DETACH DATABASE masterdb`);
         return rows;
+    });
+
+    ipcMain.handle("investments:exportToExcel", async (event, payload) => {
+        try {
+            const { investments, isAdmin } = payload;
+            const session = getSession();
+
+            if (!investments || investments.length === 0) {
+                return {
+                    success: false,
+                    error: "No investments to export",
+                };
+            }
+
+            // Generate default filename with today's date and username
+            const defaultFilename = generateFilename(session.username);
+
+            // Show save dialog to user
+            const { filePath, canceled } = await dialog.showSaveDialog({
+                title: "Export Investments to Excel",
+                defaultPath: defaultFilename,
+                filters: [
+                    {
+                        name: "Excel Workbook",
+                        extensions: ["xlsx"],
+                    },
+                ],
+            });
+
+            if (canceled || !filePath) {
+                return {
+                    success: false,
+                    error: "Export canceled by user",
+                };
+            }
+
+            // Create workbook with investments data
+            const workbook = createInvestmentsWorkbook(investments, isAdmin);
+
+            // Write file to disk
+            XLSX.writeFile(workbook, filePath);
+
+            return {
+                success: true,
+                filePath,
+                message: `Investments exported successfully to ${path.basename(filePath)}`,
+            };
+        } catch (err) {
+            console.error("[investments:exportToExcel]", err);
+            return {
+                success: false,
+                error: err.message,
+            };
+        }
     });
 }
 

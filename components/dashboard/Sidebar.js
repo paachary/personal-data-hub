@@ -20,10 +20,14 @@ export default function Sidebar({
                         <p className={styles.navGroup}>{group}</p>
                         {items
                             .filter(({ id }) => {
-                                // Admin should not see personal Banks/Investments tabs
+                                // Admin should not see personal Banks/Investments/Statements tabs
                                 if (
                                     isAdmin &&
-                                    ["banks", "investments"].includes(id)
+                                    [
+                                        "banks",
+                                        "investments",
+                                        "statements",
+                                    ].includes(id)
                                 )
                                     return false;
                                 return true;
@@ -96,7 +100,7 @@ export default function Sidebar({
                                         >
                                             {label}
                                         </button>
-                                    )
+                                    ),
                                 )}
                             </div>
                         )}

@@ -16,7 +16,7 @@ function PasswordInput({ field, value, onChange, onValidationError }) {
             field.type === "password" && value // ← only validate if value is non-empty
                 ? validatePassword(value)
                 : [],
-        [field.type, value]
+        [field.type, value],
     );
     const strength =
         field.type === "password" ? getPasswordStrength(value) : null;
@@ -39,7 +39,7 @@ function PasswordInput({ field, value, onChange, onValidationError }) {
                     value={value || ""}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder="••••••••"
-                    maxLength={20}
+                    maxLength={50}
                 />
                 <button
                     type="button"
@@ -60,8 +60,8 @@ function PasswordInput({ field, value, onChange, onValidationError }) {
                                     strength.label === "Weak"
                                         ? "33%"
                                         : strength.label === "Medium"
-                                        ? "66%"
-                                        : "100%",
+                                          ? "66%"
+                                          : "100%",
                                 background: strength.color,
                             }}
                         />

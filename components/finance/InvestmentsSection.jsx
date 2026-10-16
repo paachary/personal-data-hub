@@ -23,9 +23,14 @@ export default function InvestmentsSection({
     const [filter, setFilter] = useState("all");
     const [modal, setModal] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
 
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [chartUser, setChartUser] = useState("");
+
+    const [selectedBank, setSelectedBank] = useState("");
+    const [selectedInstrument, setSelectedInstrument] = useState("");
+    const [selectedType, setSelectedType] = useState("");
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -64,14 +69,61 @@ export default function InvestmentsSection({
         load();
     };
 
+    const handleExport = async () => {
+        if (filtered.length === 0) {
+            alert("No investments to export. Apply filters and try again.");
+            return;
+        }
+
+        setExporting(true);
+        try {
+            const result = await window.electronAPI.investments.exportToExcel({
+                investments: filtered,
+                isAdmin: viewAll,
+            });
+
+            if (result.success) {
+                alert(
+                    `✅ Export successful! File saved.\n\n${result.message}`
+                );
+            } else {
+                alert(`❌ Export failed: ${result.error}`);
+            }
+        } catch (err) {
+            console.error("[handleExport]", err);
+            alert(`❌ Export error: ${err.message}`);
+        } finally {
+            setExporting(false);
+        }
+    };
+
     const filtered = useMemo(() => {
         let data = investments;
         if (selectedUsers.length > 0)
             data = data.filter((i) => selectedUsers.includes(i.username));
         if (filter === "active") data = data.filter((i) => !i.is_closed);
         if (filter === "closed") data = data.filter((i) => i.is_closed);
-        return data;
-    }, [investments, selectedUsers, filter]);
+        if (selectedBank)
+            data = data.filter((i) => i.bank_name === selectedBank);
+        if (selectedInstrument)
+            data = data.filter((i) => i.instrument_code === selectedInstrument);
+        if (selectedType)
+            data = data.filter((i) => i.investment_type_code === selectedType);
+        // Sort by bank name, then by user
+        return data.sort((a, b) => {
+            if (a.bank_name !== b.bank_name) {
+                return a.bank_name.localeCompare(b.bank_name);
+            }
+            return a.user_id - b.user_id;
+        });
+    }, [
+        investments,
+        selectedUsers,
+        filter,
+        selectedBank,
+        selectedInstrument,
+        selectedType,
+    ]);
 
     const totalAmount = useMemo(
         () => filtered.reduce((sum, inv) => sum + (inv.amount || 0), 0),
@@ -98,8 +150,129 @@ export default function InvestmentsSection({
         let data = investments.filter((i) => i.username === chartUser);
         if (filter === "active") data = data.filter((i) => !i.is_closed);
         if (filter === "closed") data = data.filter((i) => i.is_closed);
-        return data;
+        // Sort by bank name
+        return data.sort((a, b) => a.bank_name.localeCompare(b.bank_name));
     }, [investments, chartUser, filter]);
+
+    // Derive sorted unique banks, instruments, and types
+    const bankOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.bank_name)) return false;
+                seen.add(i.bank_name);
+                return true;
+            })
+            .map((i) => i.bank_name)
+            .sort();
+    }, [investments]);
+
+    const instrumentOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.instrument_code)) return false;
+                seen.add(i.instrument_code);
+                return true;
+            })
+            .map((i) => i.instrument_code)
+            .sort();
+    }, [investments]);
+
+    const typeOptions = useMemo(() => {
+        const seen = new Set();
+        return investments
+            .filter((i) => {
+                if (seen.has(i.investment_type_code)) return false;
+                seen.add(i.investment_type_code);
+                return true;
+            })
+            .map((i) => i.investment_type_code)
+            .sort();
+    }, [investments]);
+
+    // ── Helper functions for DRY principle ──────────────────────────
+    const renderFilterDropdown = (label, options, value, onChange) => (
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.3rem",
+            }}
+        >
+            <label
+                style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 500,
+                    color: "#1a1a1a",
+                }}
+            >
+                {label}
+            </label>
+            <select className={styles.select} value={value} onChange={onChange}>
+                <option value="">All</option>
+                {options.map((opt) => (
+                    <option key={opt} value={opt}>
+                        {opt}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+
+    const renderFilterDropdowns = () => (
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            {renderFilterDropdown("Bank", bankOptions, selectedBank, (e) =>
+                setSelectedBank(e.target.value),
+            )}
+            {renderFilterDropdown(
+                "Instrument",
+                instrumentOptions,
+                selectedInstrument,
+                (e) => setSelectedInstrument(e.target.value),
+            )}
+            {renderFilterDropdown("Type", typeOptions, selectedType, (e) =>
+                setSelectedType(e.target.value),
+            )}
+        </div>
+    );
+
+    const renderTabs = () => (
+        <div className={styles.tabs}>
+            {[
+                { key: "all", label: `All (${investments.length})` },
+                {
+                    key: "active",
+                    label: `Active (${
+                        investments.filter((i) => !i.is_closed).length
+                    })`,
+                },
+                {
+                    key: "closed",
+                    label: `Closed (${
+                        investments.filter((i) => i.is_closed).length
+                    })`,
+                },
+            ].map((t) => (
+                <button
+                    key={t.key}
+                    className={`${styles.tab} ${
+                        filter === t.key ? styles.tabActive : ""
+                    }`}
+                    onClick={() => setFilter(t.key)}
+                >
+                    {t.label}
+                </button>
+            ))}
+        </div>
+    );
+
+    const renderStatusBadge = (isClosed) =>
+        isClosed ? (
+            <span className={styles.closedBadge}>Closed</span>
+        ) : (
+            <span className={styles.activeBadge}>Active</span>
+        );
 
     // ── Admin "view all" mode ─────────────────────────────────────
     if (viewAll) {
@@ -114,6 +287,14 @@ export default function InvestmentsSection({
                             Read-only view of all users&apos; investments
                         </p>
                     </div>
+                    <button
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={handleExport}
+                        disabled={exporting || filtered.length === 0}
+                        title="Export visible investments to Excel"
+                    >
+                        {exporting ? "Exporting..." : "📥 Export to Excel"}
+                    </button>
                 </div>
 
                 {/* ── Per-user chart ───────────────────────────── */}
@@ -147,33 +328,10 @@ export default function InvestmentsSection({
                     onChange={setSelectedUsers}
                 />
 
-                <div className={styles.tabs}>
-                    {[
-                        { key: "all", label: `All (${investments.length})` },
-                        {
-                            key: "active",
-                            label: `Active (${
-                                investments.filter((i) => !i.is_closed).length
-                            })`,
-                        },
-                        {
-                            key: "closed",
-                            label: `Closed (${
-                                investments.filter((i) => i.is_closed).length
-                            })`,
-                        },
-                    ].map((t) => (
-                        <button
-                            key={t.key}
-                            className={`${styles.tab} ${
-                                filter === t.key ? styles.tabActive : ""
-                            }`}
-                            onClick={() => setFilter(t.key)}
-                        >
-                            {t.label}
-                        </button>
-                    ))}
-                </div>
+                {/* ── Filter dropdowns ─────────────────────────── */}
+                {renderFilterDropdowns()}
+
+                {renderTabs()}
 
                 {loading ? (
                     <p className={styles.empty}>Loading...</p>
@@ -237,23 +395,7 @@ export default function InvestmentsSection({
                                         <td>{inv.investment_date}</td>
                                         <td>{inv.maturity_date || "—"}</td>
                                         <td>
-                                            {inv.is_closed ? (
-                                                <span
-                                                    className={
-                                                        styles.closedBadge
-                                                    }
-                                                >
-                                                    Closed
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    className={
-                                                        styles.activeBadge
-                                                    }
-                                                >
-                                                    Active
-                                                </span>
-                                            )}
+                                            {renderStatusBadge(inv.is_closed)}
                                         </td>
                                     </tr>
                                 ))}
@@ -265,7 +407,7 @@ export default function InvestmentsSection({
                                         style={{
                                             textAlign: "right",
                                             fontWeight: 800,
-                                            color: "#dfe6ee",
+
                                             padding: "0.75rem 1rem",
                                         }}
                                     >
@@ -274,7 +416,7 @@ export default function InvestmentsSection({
                                     <td
                                         style={{
                                             fontWeight: 900,
-                                            color: "#e2e8f0",
+
                                             padding: "0.75rem 1rem",
                                         }}
                                     >
@@ -300,47 +442,34 @@ export default function InvestmentsSection({
                         Track all your investments across instruments
                     </p>
                 </div>
-                {!isAdmin && (
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                    {!isAdmin && (
+                        <button
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={() => setModal("add")}
+                        >
+                            + Add Investment
+                        </button>
+                    )}
                     <button
-                        className={`${styles.btn} ${styles.btnPrimary}`}
-                        onClick={() => setModal("add")}
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={handleExport}
+                        disabled={exporting || filtered.length === 0}
+                        title="Export visible investments to Excel"
                     >
-                        + Add Investment
+                        {exporting ? "Exporting..." : "📥 Export to Excel"}
                     </button>
-                )}
+                </div>
             </div>
 
             {!loading && investments.length > 0 && (
                 <InvestmentDistributionChart investments={filtered} />
             )}
 
-            <div className={styles.tabs}>
-                {[
-                    { key: "all", label: `All (${investments.length})` },
-                    {
-                        key: "active",
-                        label: `Active (${
-                            investments.filter((i) => !i.is_closed).length
-                        })`,
-                    },
-                    {
-                        key: "closed",
-                        label: `Closed (${
-                            investments.filter((i) => i.is_closed).length
-                        })`,
-                    },
-                ].map((t) => (
-                    <button
-                        key={t.key}
-                        className={`${styles.tab} ${
-                            filter === t.key ? styles.tabActive : ""
-                        }`}
-                        onClick={() => setFilter(t.key)}
-                    >
-                        {t.label}
-                    </button>
-                ))}
-            </div>
+            {/* ── Filter dropdowns ─────────────────────────── */}
+            {renderFilterDropdowns()}
+
+            {renderTabs()}
 
             {loading ? (
                 <p className={styles.empty}>Loading...</p>
@@ -397,21 +526,7 @@ export default function InvestmentsSection({
                                     <td>{fmt(inv.amount)}</td>
                                     <td>{inv.investment_date}</td>
                                     <td>{inv.maturity_date || "—"}</td>
-                                    <td>
-                                        {inv.is_closed ? (
-                                            <span
-                                                className={styles.closedBadge}
-                                            >
-                                                Closed
-                                            </span>
-                                        ) : (
-                                            <span
-                                                className={styles.activeBadge}
-                                            >
-                                                Active
-                                            </span>
-                                        )}
-                                    </td>
+                                    <td>{renderStatusBadge(inv.is_closed)}</td>
                                     {!isAdmin && (
                                         <td>
                                             <div className={styles.cardActions}>
@@ -444,7 +559,6 @@ export default function InvestmentsSection({
                                     style={{
                                         textAlign: "right",
                                         fontWeight: 800,
-                                        color: "#dfe6ee",
                                         padding: "0.75rem 1rem",
                                     }}
                                 >
@@ -453,7 +567,6 @@ export default function InvestmentsSection({
                                 <td
                                     style={{
                                         fontWeight: 900,
-                                        color: "#e2e8f0",
                                         padding: "0.75rem 1rem",
                                     }}
                                 >

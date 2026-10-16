@@ -1,6 +1,7 @@
 const { registerAuthHandlers } = require("./auth");
 const { registerBankHandlers } = require("./finance/banks");
 const { registerInvestmentHandlers } = require("./finance/investments");
+const { registerImportHandlers } = require("./finance/import");
 const { registerVaultHandlers } = require("./vault/vault");
 const { registerSettingsHandlers } = require("./settings/settings");
 const { registerAdminUserHandlers } = require("./admin/users");
@@ -12,6 +13,7 @@ function registerAllHandlers() {
     registerVaultHandlers(); // add future handlers here
     registerBankHandlers();
     registerInvestmentHandlers();
+    registerImportHandlers();
     registerSettingsHandlers();
     registerAdminUserHandlers();
     registerTodoHandlers();

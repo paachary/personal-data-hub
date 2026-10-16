@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
         add: (data) => ipcRenderer.invoke("investments:add", data),
         update: (data) => ipcRenderer.invoke("investments:update", data),
         delete: (id) => ipcRenderer.invoke("investments:delete", id),
+        exportToExcel: (data) =>
+            ipcRenderer.invoke("investments:exportToExcel", data),
         getInstrumentTypes: () =>
             ipcRenderer.invoke("finance:getInstrumentTypes"),
         addInstrumentType: (data) =>
@@ -98,5 +100,20 @@ contextBridge.exposeInMainWorld("electronAPI", {
         delete: (id) => ipcRenderer.invoke("todos:delete", id),
         syncVaultReminders: (entries) =>
             ipcRenderer.invoke("todos:syncVaultReminders", entries),
+    },
+
+    finance: {
+        selectStatementFile: (data) =>
+            ipcRenderer.invoke("finance:selectStatementFile", data),
+        importStatements: (data) =>
+            ipcRenderer.invoke("finance:importStatements", data),
+        getStatements: (data) =>
+            ipcRenderer.invoke("finance:getStatements", data),
+        getStatementTransactions: (data) =>
+            ipcRenderer.invoke("finance:getStatementTransactions", data),
+        getTrendData: (data) =>
+            ipcRenderer.invoke("finance:getTrendData", data),
+        clearStatementData: (data) =>
+            ipcRenderer.invoke("finance:clearStatementData", data),
     },
 });

@@ -32,7 +32,7 @@ async function getFinanceKey() {
 function getFinanceDb() {
     if (financeDb) return financeDb;
     throw new Error(
-        "[financeDb] DB not initialised — call initFinanceDb() after login first."
+        "[financeDb] DB not initialised — call initFinanceDb() after login first.",
     );
 }
 
@@ -53,7 +53,7 @@ async function initFinanceDb() {
             financeDb.close();
             financeDb = null;
             throw new Error(
-                `[financeDb] Cannot decrypt existing DB. ${err.message}`
+                `[financeDb] Cannot decrypt existing DB. ${err.message}`,
             );
         }
     }
@@ -110,14 +110,106 @@ async function initFinanceDb() {
             FOREIGN KEY (instrument_type_id) REFERENCES instrument_types(id),
             FOREIGN KEY (investment_type_id) REFERENCES investment_types(id)
         );
+        CREATE TABLE IF NOT EXISTS statements (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id             INTEGER NOT NULL,
+            account_id          INTEGER NOT NULL,
+            bank_code           TEXT NOT NULL,
+            file_name           TEXT NOT NULL,
+            import_date         TEXT DEFAULT (datetime('now')),
+            start_date          TEXT,
+            end_date            TEXT,
+            opening_balance     REAL,
+            closing_balance     REAL,
+            total_debits        REAL DEFAULT 0,
+            total_credits       REAL DEFAULT 0,
+            row_count           INTEGER DEFAULT 0,
+            import_status       TEXT DEFAULT 'success',
+            notes               TEXT,
+            created_at          TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (account_id) REFERENCES user_bank_accounts(id)
+        );
+        CREATE TABLE IF NOT EXISTS statement_raw_data (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            statement_id        INTEGER NOT NULL,
+            line_number         INTEGER NOT NULL,
+            raw_row_json        TEXT NOT NULL,
+            imported_at         TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (statement_id) REFERENCES statements(id)
+        );
+        CREATE TABLE IF NOT EXISTS transactions (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            statement_id        INTEGER NOT NULL,
+            account_id          INTEGER NOT NULL,
+            date                TEXT NOT NULL,
+            description         TEXT NOT NULL,
+            debit               REAL DEFAULT 0,
+            credit              REAL DEFAULT 0,
+            balance             REAL,
+            fingerprint_hash    TEXT NOT NULL,
+            created_at          TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (statement_id) REFERENCES statements(id),
+            FOREIGN KEY (account_id) REFERENCES user_bank_accounts(id),
+            UNIQUE(fingerprint_hash, account_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_transactions_account_date ON transactions(account_id, date);
+        CREATE INDEX IF NOT EXISTS idx_transactions_statement ON transactions(statement_id);
+        CREATE TABLE IF NOT EXISTS transaction_summaries (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id          INTEGER NOT NULL,
+            date                TEXT NOT NULL,
+            total_debits        REAL DEFAULT 0,
+            total_credits       REAL DEFAULT 0,
+            net                 REAL DEFAULT 0,
+            txn_count           INTEGER DEFAULT 0,
+            updated_at          TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (account_id) REFERENCES user_bank_accounts(id),
+            UNIQUE(account_id, date)
+        );
+        CREATE TABLE IF NOT EXISTS transaction_summaries_weekly (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id          INTEGER NOT NULL,
+            week_start_date     TEXT NOT NULL,
+            total_debits        REAL DEFAULT 0,
+            total_credits       REAL DEFAULT 0,
+            net                 REAL DEFAULT 0,
+            txn_count           INTEGER DEFAULT 0,
+            updated_at          TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (account_id) REFERENCES user_bank_accounts(id),
+            UNIQUE(account_id, week_start_date)
+        );
+        CREATE TABLE IF NOT EXISTS transaction_summaries_monthly (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id          INTEGER NOT NULL,
+            year_month          TEXT NOT NULL,
+            total_debits        REAL DEFAULT 0,
+            total_credits       REAL DEFAULT 0,
+            net                 REAL DEFAULT 0,
+            txn_count           INTEGER DEFAULT 0,
+            updated_at          TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (account_id) REFERENCES user_bank_accounts(id),
+            UNIQUE(account_id, year_month)
+        );
+        CREATE TABLE IF NOT EXISTS transaction_summaries_yearly (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id          INTEGER NOT NULL,
+            year                INTEGER NOT NULL,
+            total_debits        REAL DEFAULT 0,
+            total_credits       REAL DEFAULT 0,
+            net                 REAL DEFAULT 0,
+            txn_count           INTEGER DEFAULT 0,
+            updated_at          TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (account_id) REFERENCES user_bank_accounts(id),
+            UNIQUE(account_id, year)
+        );
     `);
 
     // ── Seed ──────────────────────────────────────────────
     const insertInstrument = financeDb.prepare(
-        `INSERT OR IGNORE INTO instrument_types (code, description) VALUES (?, ?)`
+        `INSERT OR IGNORE INTO instrument_types (code, description) VALUES (?, ?)`,
     );
     const insertInvestmentType = financeDb.prepare(
-        `INSERT OR IGNORE INTO investment_types (code, description) VALUES (?, ?)`
+        `INSERT OR IGNORE INTO investment_types (code, description) VALUES (?, ?)`,
     );
 
     for (const s of [
