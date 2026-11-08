@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.1-blue" />
+  <img src="https://img.shields.io/badge/version-1.2.0-blue" />
   <img src="https://img.shields.io/badge/electron-41-47848F?logo=electron" />
   <img src="https://img.shields.io/badge/next.js-16-black?logo=next.js" />
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" />
@@ -38,10 +38,12 @@
 - [Tech Stack](#tech-stack)
 - [Application Access](#application-access)
     - [First Launch](#first-launch--create-sysadmin)
-    - [Roles & Responsibilies](#-roles--responsibilities)
+    - [Roles & Responsibilities](#-roles--responsibilities)
         - [Sysadmin](#-sysadmin)
         - [Regular User](#-regular-user)
-    - [Investment Reports](#-investment-reports-sysadmin-only)
+    - [Reports (Sysadmin Only)](#-reports-sysadmin-only)
+- [Statement Import & Analytics](#statement-import--analytics)
+- [Known Limitations](#known-limitations)
 - [Author](#author)
 
 ---
@@ -57,6 +59,8 @@ It is designed as a single, unified place to store:
 - To-do tasks with prioritisation, due dates, and desktop reminder notifications
 - Bank accounts and financial institution details
 - Investment portfolio tracking across all instruments
+- Bank statement imports with balance, credit and debit analytics
+- Admin reports on investments and monthly debits
 
 ---
 
@@ -70,7 +74,13 @@ It is designed as a single, unified place to store:
 | 🏦 **Banks & Accounts**  | Track bank accounts and balances                                                                  |
 | 📈 **Investments**       | Full portfolio tracking with instrument and investment type management                            |
 | 📊 **Investment Charts** | Donut chart showing distribution by instrument type — syncs with the active/closed filter         |
+| 📥 **Statement Import**  | Import CSV and Excel (.xlsx/.xls) bank statements, with bank-specific layouts for HDFC, ICICI, SBI, Union Bank and Standard Chartered, a generic fallback, and duplicate detection |
+| 📉 **Spending Analytics** | Weekly, monthly and yearly summaries, trend charts, opening/closing balance and credit/debit totals |
+| 📑 **Reports**           | Sysadmin reports: all active investments, SIP-only investments, monthly debit summary by user and by bank |
+| 📤 **Excel Export**      | Export investments to XLSX                                                                        |
+| 🌍 **Location Dropdowns** | Country, state and city pickers on registration and profile (uses an online lookup, see [Security](#security)) |
 | 🔐 **MFA**               | TOTP-based Two-Factor Authentication (Google Authenticator, Authy, etc.)                          |
+| 🛡️ **Password Policy**   | 8–50 characters with uppercase, lowercase, number and special character required                 |
 | 👥 **Admin Panel**       | User management, password resets, master data configuration                                       |
 | ⏱ **Inactivity Logout**  | Auto-logout after 5 minutes of inactivity                                                         |
 | 🌙 **Dark UI**           | Fully dark-themed interface                                                                       |
@@ -202,7 +212,7 @@ npm run postinstall
 
 ### Development
 
-Runs Next.js (port 4000) and Electron concurrently with hot reload:
+Runs Next.js (port 4000) and Electron concurrently. Port 4000 must be free before you start:
 
 ```bash
 npm run dev
@@ -237,6 +247,16 @@ All application data is stored **locally** on your device:
 | Windows  | `%APPDATA%\Personal Data Hub\`                     |
 | Linux    | `~/.config/personal-data-hub/`                     |
 
+Inside that folder, the app keeps:
+
+| File | Contents |
+| ---- | -------- |
+| `data/master.db` | Users, to-do list |
+| `data/vault_<username>.json` | Each user's encrypted passwords and notes |
+| `data/finance.db` | Encrypted bank, account, investment and statement data |
+
+Encryption keys are kept in the OS keychain, not in these files. Deleting the data folder without also removing the keychain entries leaves orphaned keys.
+
 To fully reset the application (wipe all data):
 
 ```bash
@@ -254,11 +274,16 @@ rm -rf ~/.config/personal-data-hub/
 
 ## Security
 
-- All vault and notes data is **AES-encrypted** before being written to disk
-- The master password never leaves the device
+- Vault entries and secure notes are **AES-256-GCM encrypted** before being written to disk
+- Finance data (banks, accounts, investments, statements) is stored in an **encrypted SQLite database**
 - Encryption keys are stored in the **OS keychain** via [Keytar](https://github.com/atom/node-keytar)
+- Passwords are stored as PBKDF2 hashes, not in plain text
 - TOTP-based **MFA** support via [Speakeasy](https://github.com/speakeasy-userland/speakeasy)
 - **Inactivity timeout** — automatic logout after 5 minutes of inactivity
+- **Export warning:** Word and Excel exports write **unencrypted** files to the location you choose. Store and delete them carefully.
+- **One network feature:** the country, state and city dropdowns on registration and profile call a public lookup API (`countriesnow.space`). Only location names are sent. No personal data or vault content is sent. The rest of the app works offline.
+
+See [Known Limitations](#known-limitations) for security gaps that are still open.
 
 ---
 
@@ -269,8 +294,11 @@ rm -rf ~/.config/personal-data-hub/
 | Desktop shell                     | Electron 41                                                                   |
 | Frontend                          | Next.js 16, React 19                                                          |
 | Database (accounts & investments) | SQLite via better-sqlite3 (AES-encrypted via better-sqlite3-multiple-ciphers) |
-| Database (vault & notes)          | lowdb (AES-encrypted JSON file, one per user)                                 |
-| Encryption                        | crypto-js, bcryptjs                                                           |
+| Vault & notes storage             | AES-256-GCM encrypted JSON file, one per user (`vault_<username>.json`), Node `crypto` |
+| Password hashing                  | PBKDF2-SHA512 via Node `crypto`                                               |
+| Statement parsing                 | csv-parse, xlsx (PDF parsing code exists but import is disabled)              |
+| Excel export                      | xlsx                                                                          |
+| Other                             | marked (help pages), qrcode (MFA setup)                                       |
 | Keychain                          | keytar                                                                        |
 | MFA                               | speakeasy, qrcode                                                             |
 | Charts                            | recharts                                                                      |
@@ -295,7 +323,7 @@ rm -rf ~/.config/personal-data-hub/
 
 #### 🔐 Sysadmin
 
-The sysadmin is the administrator of the app. Only one admin account is allowed.
+The sysadmin is the administrator of the app. The app is designed for a single admin account, but this is **not yet enforced in code**.
 
 **Sysadmin can:**
 
@@ -307,7 +335,7 @@ The sysadmin is the administrator of the app. Only one admin account is allowed.
 - Manage **Investment Types** (Lumpsum, SIP, etc.)
 - View **all users' bank accounts and investments**
 - View **Investment Reports** across all users
-- Sysadmin **cannot** access passwords, notes, or todos (restricted to personal users)
+- Sysadmin **cannot** access passwords, notes, or todos. The dashboard hides these sections for the sysadmin. This block is currently applied in the UI only (see [Known Limitations](#known-limitations)).
 
 ---
 
@@ -327,15 +355,52 @@ Regular users manage their own personal data privately.
 
 ---
 
-### 📊 Investment Reports (Sysadmin Only)
+### 📊 Reports (Sysadmin Only)
 
-The sysadmin can access **Reports → Investments** from the sidebar which shows:
+The sysadmin sees **📊 Reports** under the Finance group in the sidebar. It contains:
 
-- All investments across all users
-- Grouped by instrument type (FD, MF, LIC, etc.)
-- Total invested amounts
-- Active vs closed investments
-- Maturity date tracking
+- **All Active Investments:** investments across all users, grouped by instrument type (FD, MF, LIC, etc.), with a donut chart that follows the active/closed filter
+- **SIP Only:** SIP investments across users
+- **Monthly Debit Summary by User:** monthly debits per user, grouped by bank, with sorting and collapsible sections
+- **Monthly Debit Summary:** monthly debit totals across users
+
+Investment data can be exported to XLSX.
+
+---
+
+## Statement Import & Analytics
+
+Available on the **Statements** page for each bank account.
+
+1. Choose a bank and file type (CSV or Excel).
+2. Select the file. The app parses the opening and closing balance, totals, and every transaction.
+3. Transactions are checked for duplicates using a fingerprint. Re-importing the same statement does not create duplicates.
+4. Weekly, monthly and yearly summaries are rebuilt for the account.
+5. Use the trend chart and transaction list to review spending over a date range.
+
+Supported bank layouts: HDFC, ICICI, SBI, Union Bank of India and Standard Chartered, in CSV and Excel. Other banks use the generic CSV or Excel parser, which works only if the columns match its expected layout.
+
+> **PDF statements are not supported yet.** The import screen rejects PDF files. Export your statement as CSV or Excel from your bank's portal.
+
+---
+
+## Known Limitations
+
+These are known gaps in the current version. Most are tracked in `AGENTS.md`.
+
+- **Sysadmin block is UI-only.** The dashboard hides passwords, notes and to-dos for the sysadmin, but the app's backend does not yet block those calls.
+- **Multiple sysadmins are possible.** Nothing stops a second admin account from being created.
+- **MFA is not enforced for data access.** It gates the login screen flow only.
+- **Shared to-dos.** To-do items are stored in one shared list, not per user.
+- **Vault reminders** from expiry dates are created once per entry. The `issueDate` field is treated like an expiry date. Check reminder dates after adding vault entries.
+- **PDF statements are not supported.** Import accepts CSV and Excel only.
+- **Password hashing** uses PBKDF2 with a low iteration count.
+- **Plain-text exports.** Word and Excel exports are not encrypted.
+- **Country, state and city lookup** needs internet access. All other features work offline.
+- **Linux** requires a running secret service (`gnome-keyring` or similar) for the keychain. The app may need `--no-sandbox` to start from an AppImage.
+- **Not notarised.** macOS and Windows will show security warnings on first launch.
+
+---
 
 ---
 
