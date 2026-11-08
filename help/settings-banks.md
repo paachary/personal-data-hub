@@ -10,9 +10,9 @@ Manage the master list of banks available for users to link their accounts.
 
 -   **Add** a bank (bank name, branch name, city)
 -   **Edit** existing bank entries
--   **Delete** banks (only if no accounts are linked)
+-   **Delete** banks (you are asked to confirm)
 
 ## Tips
 
--   Banks added here will appear in the dropdown when users add their bank accounts.
--   You cannot delete a bank that has user accounts linked to it.
+-   Banks added here appear in the dropdown when users add their bank accounts.
+-   Deleting a bank is not blocked when users have accounts linked to it. Check with users before you delete a bank that is in use.
