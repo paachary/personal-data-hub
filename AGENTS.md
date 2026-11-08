@@ -41,7 +41,7 @@ Guidance for AI coding agents working in this repository. Verified against the c
 | Item | Value (source) |
 |---|---|
 | Name | `personal-data-hub` (`package.json`) |
-| Version | `1.2.0` (`package.json`). README badge says `1.1.1`. Mismatch. |
+| Version | `1.2.0` (`package.json`). README badge also says `1.2.0`. Match. |
 | Purpose | Personal, single-machine desktop app: password vault, secure notes, to-dos/reminders, bank accounts, statement import and analytics, investments, reports, Word/Excel export. |
 | Offline-first | All data stays on the local machine, under Electron's `userData` directory. No server. |
 | Target users | Individuals managing their own data. Multiple local accounts are supported, with a single `sysadmin` account for user administration (README). |
@@ -161,7 +161,7 @@ Verification: every channel in the preload has a handler in `electron/ipc/index.
 ```
 personal-data-hub/
 ├── AGENTS.md                  This file
-├── README.md                  User-facing README (partly out of date, see §15)
+├── README.md                  User-facing README (version badge matches package.json; see §15)
 ├── package.json               Scripts, deps, electron-builder config
 ├── next.config.mjs            Next static export config
 ├── eslint.config.mjs          ESLint flat config (next core-web-vitals)
@@ -203,7 +203,7 @@ personal-data-hub/
 │   ├── master/masterdb.js     Plain SQLite master.db: users, todos
 │   ├── finance/financeDb.js   Encrypted finance.db: banks, accounts, investments, statements, transactions, summaries
 │   └── migrations/006_add_bank_and_admin_features.sql   NOT applied by any code (see §15)
-├── help/*.md                  In-app help topics (dashboard, passwords, notes, todos, banks, investments, reports-investments, settings-*, admin-users)
+├── help/*.md                  In-app help topics (dashboard, passwords, notes, todos, banks, investments, reports-investments, statements, settings, settings-*, admin-users, admin-all-banks, admin-all-investments, mfa-help)
 ├── scripts/generate-icon.js   Icon generation (sharp), writes build/icon.*
 ├── public/                    Static assets (default Next SVGs)
 ├── build/                     Icons: icon.icns, icon.ico, icon.png, icon.iconset/
@@ -429,9 +429,12 @@ For each module: files, data, and behaviour.
 - Channels: `finance:selectStatementFile`, `finance:importStatements`, `finance:getStatements`, `finance:getStatementTransactions`, `finance:getTrendData`, `finance:clearStatementData`.
 - Data: `statements`, `statement_raw_data`, `transactions` (dedup by fingerprint), summary tables.
 - Charts: `recharts`.
+- Import formats (README): CSV and Excel (.xlsx/.xls) only. Bank-specific layouts for HDFC, ICICI, SBI, Union Bank and Standard Chartered, plus a generic fallback. Duplicates are skipped by fingerprint.
+- PDF parsing code exists but import is disabled (README). The import screen rejects PDF files.
 
 ### 8.7 Reports
 - Investment report: `reports-investments` section, admin-visible (per `constants/sections.js`). TODO: confirm whether regular users can see it.
+- Sysadmin reports (README): all active investments, SIP-only investments, and monthly debit summary by user and by bank.
 
 ### 8.8 Admin panel
 - Files: `electron/ipc/admin/users.js`, `components/` admin UI, `settings-banks`, `settings-instrument-types`, `settings-investment-types`, `admin-users` sections in `constants/sections.js`.
@@ -576,7 +579,6 @@ Run `npm run dev` (or `npm run electron-dev`) and check:
 - **Stale delete**: `transaction_summaries_daily` in `import.js` does not exist. Harmless.
 - **Username in paths**: `vault_<username>.json`. Characters like `/` or `..` would be dangerous. Validate usernames before using them in paths.
 - **Dist noise**: `npx eslint .` lints `dist/` build output and fails. Lint the source folders instead.
-- **Version mismatch**: `package.json` 1.2.0, README badge 1.1.1.
 
 ---
 
@@ -630,9 +632,9 @@ Run `npm run dev` (or `npm run electron-dev`) and check:
 **Packaging**
 25. Unsigned, not notarised. TODO: notarisation plan.
 26. Linux `--no-sandbox` and libsecret notes are not in the build config.
-27. Version mismatch (1.2.0 vs README 1.1.1).
+27. `package.json` `readme` field is an old copy of the README. It still lists "Backup and Sync" and does not match `README.md`.
 
 **Feature gaps**
-28. README "Backup and Sync" is not present in the code. TODO: confirm by searching for sync and backup code.
+28. "Backup and Sync" is no longer in `README.md`, but the `package.json` `readme` field still lists it. Not present in code per earlier review. TODO: confirm by searching for sync and backup code.
 29. Vault type `customExpiry` reminder logic. TODO: confirm.
 
