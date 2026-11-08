@@ -23,4 +23,9 @@ Manage the types of financial instruments available when adding investments.
 
 -   **Add** new instrument types
 -   **Edit** existing types
--   **Delete** unused types
+-   **Delete** types (you are asked to confirm)
+
+## Tips
+
+-   Deleting a type is not blocked when investments use it. Check existing investments before you delete a type.
+-   The types you add here appear in the **Instrument** dropdown on the Investments form and in the Reports filters.
