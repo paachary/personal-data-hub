@@ -27,6 +27,7 @@ export default function Sidebar({
                                         "banks",
                                         "investments",
                                         "statements",
+                                        "advance-tax",
                                     ].includes(id)
                                 )
                                     return false;

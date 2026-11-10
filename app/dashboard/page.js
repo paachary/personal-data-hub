@@ -19,6 +19,7 @@ import StatementsAnalyticsSection from "@/components/finance/StatementsAnalytics
 import AdminUsersSection from "@/components/admin/AdminUsersSection";
 import MfaHelpPage from "@/app/auth/mfa-help/page";
 import TodosSection from "@/components/todos/TodosSection"; // ← Add
+import AdvanceTaxSection from "@/components/tax/AdvanceTaxSection";
 
 import { SECTION_SUBTITLES, SECTION_TITLES } from "@/constants/sections";
 
@@ -130,6 +131,12 @@ export default function DashboardPage() {
                         isAdmin={false}
                     />
                 )}
+                {activeSection === "advance-tax" &&
+                    (isAdmin ? (
+                        <AdminRestrictedSection section="Advance Tax" />
+                    ) : (
+                        <AdvanceTaxSection />
+                    ))}
                 {/* Admin-only settings */}
                 {activeSection === "settings" && <SettingsGeneral />}
                 {activeSection === "settings-banks" && isAdmin && (
@@ -174,6 +181,7 @@ export default function DashboardPage() {
                     "investments",
                     "banks",
                     "statements",
+                    "advance-tax",
                     "admin-all-banks",
                     "admin-all-investments",
                     "settings",

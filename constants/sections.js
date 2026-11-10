@@ -17,6 +17,7 @@ export const NAV_SECTIONS = [
             { id: "banks", label: "🏦 Banks & Accounts" },
             { id: "statements", label: "📊 Statements" },
             { id: "investments", label: "📈 Investments" },
+            { id: "advance-tax", label: "🧾 Advance Tax" },
         ],
     },
     {
@@ -54,6 +55,7 @@ export const SECTION_SUBTITLES = {
     "mfa-help": "Learn how to use Two-Factor Authentication.",
     todos: "Your to-do list and reminders.",
     statements: "View and import bank statements, analyze spending trends.",
+    "advance-tax": "Estimate advance tax, instalments and interest.",
 };
 
 export const SECTION_TITLES = {
@@ -68,6 +70,7 @@ export const SECTION_TITLES = {
     "mfa-help": "🔐 MFA Guide",
     todos: "📋 To-Do & Reminders",
     statements: "📊 Statements",
+    "advance-tax": "🧾 Advance Tax",
 };
 
 export const DASHBOARD_STATS = [

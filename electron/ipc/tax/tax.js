@@ -70,6 +70,11 @@ function registerCrudChannels(name, crud) {
 }
 
 function registerTaxHandlers() {
+    ipcMain.handle("tax:financialYears", () => {
+        const userId = requireRegularUser();
+        return service.listFinancialYears(getFinanceDb(), userId);
+    });
+
     ipcMain.handle("tax:getOverview", (event, fy) => {
         const userId = requireRegularUser();
         checkFy(fy);
@@ -102,6 +107,12 @@ function registerTaxHandlers() {
         const userId = requireRegularUser();
         const { fy, data } = splitFy(payload);
         return { success: true, ...service.capitalGains.add(getFinanceDb(), userId, fy, data) };
+    });
+
+    ipcMain.handle("tax:capitalGains:update", (event, payload) => {
+        const userId = requireRegularUser();
+        const { id, data } = splitId(payload);
+        return { success: true, changes: service.capitalGains.update(getFinanceDb(), userId, id, data) };
     });
 
     ipcMain.handle("tax:capitalGains:remove", (event, id) => {

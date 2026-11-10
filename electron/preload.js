@@ -104,6 +104,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     tax: {
         getOverview: (fy) => ipcRenderer.invoke("tax:getOverview", fy),
+        financialYears: () => ipcRenderer.invoke("tax:financialYears"),
         profile: {
             get: (fy) => ipcRenderer.invoke("tax:profile:get", fy),
             save: (data) => ipcRenderer.invoke("tax:profile:save", data),
@@ -129,6 +130,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         capitalGains: {
             list: (fy) => ipcRenderer.invoke("tax:capitalGains:list", fy),
             add: (data) => ipcRenderer.invoke("tax:capitalGains:add", data),
+            update: (data) => ipcRenderer.invoke("tax:capitalGains:update", data),
             remove: (id) => ipcRenderer.invoke("tax:capitalGains:remove", id),
         },
         investments: {
