@@ -4,6 +4,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 const keytar = require("keytar");
 const { getDbDir } = require("../dbPath");
+const { applyTaxSchema } = require("./taxSchema");
 
 const KEYTAR_SERVICE = "personal-data-finance";
 const KEYTAR_ACCOUNT = "finance-db-key";
@@ -231,6 +232,8 @@ async function initFinanceDb() {
         { code: "STP", description: "Systematic Transfer Plan" },
     ])
         insertInvestmentType.run(s.code, s.description);
+
+    applyTaxSchema(financeDb);
 
     return financeDb;
 }

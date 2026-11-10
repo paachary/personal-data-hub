@@ -15,6 +15,22 @@ function requireAdmin() {
     if (!session.isAdmin) throw new Error("Admin access required.");
 }
 
+// Interest fields are optional. Blank input is stored as NULL.
+function parseInterest(payload) {
+    const rate =
+        payload.interest_rate === undefined || payload.interest_rate === null || payload.interest_rate === ""
+            ? null
+            : Number(payload.interest_rate);
+    if (rate !== null && (!Number.isFinite(rate) || rate < 0 || rate > 30)) {
+        throw new Error("Interest rate must be between 0 and 30.");
+    }
+    const compounding = payload.compounding || null;
+    if (compounding !== null && compounding !== "cumulative" && compounding !== "payout") {
+        throw new Error("Interest type must be cumulative or payout.");
+    }
+    return { rate, compounding };
+}
+
 function registerInvestmentHandlers() {
     // ── Lookup data ───────────────────────────────────────
 
@@ -93,14 +109,15 @@ function registerInvestmentHandlers() {
             investment_date,
             maturity_date,
         } = payload;
+        const { rate, compounding } = parseInterest(payload);
 
         const result = db
             .prepare(
                 `
             INSERT INTO investments
                 (investment_ref_id, user_id, account_id, instrument_type_id, investment_type_id,
-                 investment_name, amount, investment_date, maturity_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 investment_name, amount, investment_date, maturity_date, interest_rate, compounding)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
             )
             .run(
@@ -113,6 +130,8 @@ function registerInvestmentHandlers() {
                 amount,
                 investment_date,
                 maturity_date || null,
+                rate,
+                compounding,
             );
         return { success: true, id: result.lastInsertRowid };
     });
@@ -129,12 +148,14 @@ function registerInvestmentHandlers() {
             investment_date,
             maturity_date,
         } = payload;
+        const { rate, compounding } = parseInterest(payload);
 
         db.prepare(
             `
             UPDATE investments SET
                 account_id=?, instrument_type_id=?, investment_type_id=?,
                 investment_name=?, amount=?, investment_date=?, maturity_date=?,
+                interest_rate=?, compounding=?,
                 updated_at=datetime('now')
             WHERE id=?
         `,
@@ -146,6 +167,8 @@ function registerInvestmentHandlers() {
             amount,
             investment_date,
             maturity_date || null,
+            rate,
+            compounding,
             id,
         );
         return { success: true };

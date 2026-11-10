@@ -102,6 +102,40 @@ contextBridge.exposeInMainWorld("electronAPI", {
             ipcRenderer.invoke("todos:syncVaultReminders", entries),
     },
 
+    tax: {
+        getOverview: (fy) => ipcRenderer.invoke("tax:getOverview", fy),
+        profile: {
+            get: (fy) => ipcRenderer.invoke("tax:profile:get", fy),
+            save: (data) => ipcRenderer.invoke("tax:profile:save", data),
+        },
+        incomeSources: {
+            list: (fy) => ipcRenderer.invoke("tax:incomeSources:list", fy),
+            add: (data) => ipcRenderer.invoke("tax:incomeSources:add", data),
+            update: (data) => ipcRenderer.invoke("tax:incomeSources:update", data),
+            remove: (id) => ipcRenderer.invoke("tax:incomeSources:remove", id),
+        },
+        dividendHistory: {
+            list: (fy) => ipcRenderer.invoke("tax:dividendHistory:list", fy),
+            add: (data) => ipcRenderer.invoke("tax:dividendHistory:add", data),
+            update: (data) => ipcRenderer.invoke("tax:dividendHistory:update", data),
+            remove: (id) => ipcRenderer.invoke("tax:dividendHistory:remove", id),
+        },
+        payments: {
+            list: (fy) => ipcRenderer.invoke("tax:payments:list", fy),
+            add: (data) => ipcRenderer.invoke("tax:payments:add", data),
+            update: (data) => ipcRenderer.invoke("tax:payments:update", data),
+            remove: (id) => ipcRenderer.invoke("tax:payments:remove", id),
+        },
+        capitalGains: {
+            list: (fy) => ipcRenderer.invoke("tax:capitalGains:list", fy),
+            add: (data) => ipcRenderer.invoke("tax:capitalGains:add", data),
+            remove: (id) => ipcRenderer.invoke("tax:capitalGains:remove", id),
+        },
+        investments: {
+            setInterest: (data) => ipcRenderer.invoke("tax:investments:setInterest", data),
+        },
+    },
+
     finance: {
         selectStatementFile: (data) =>
             ipcRenderer.invoke("finance:selectStatementFile", data),

@@ -1,0 +1,133 @@
+{
+  "fy": "2026-27",
+  "assessmentYear": "2027-28",
+  "unverified": true,
+  "effectiveFrom": "2026-04-01",
+  "regimes": {
+    "new": {
+      "slabs": {
+        "all": [
+          { "from": 0, "to": 400000, "verify": true, "rate": { "value": 0, "verify": true } },
+          { "from": 400000, "to": 800000, "verify": true, "rate": { "value": 0.05, "verify": true } },
+          { "from": 800000, "to": 1200000, "verify": true, "rate": { "value": 0.10, "verify": true } },
+          { "from": 1200000, "to": 1600000, "verify": true, "rate": { "value": 0.15, "verify": true } },
+          { "from": 1600000, "to": 2000000, "verify": true, "rate": { "value": 0.20, "verify": true } },
+          { "from": 2000000, "to": 2400000, "verify": true, "rate": { "value": 0.25, "verify": true } },
+          { "from": 2400000, "to": null, "verify": true, "rate": { "value": 0.30, "verify": true } }
+        ]
+      },
+      "standardDeduction": { "value": 75000, "verify": true },
+      "rebate87A": {
+        "incomeLimit": { "value": 1200000, "verify": true },
+        "maxAmount": { "value": 60000, "verify": true },
+        "marginalRelief": true,
+        "excludesSpecialRateIncome": true
+      }
+    },
+    "old": {
+      "slabs": {
+        "under60": [
+          { "from": 0, "to": 250000, "verify": true, "rate": { "value": 0, "verify": true } },
+          { "from": 250000, "to": 500000, "verify": true, "rate": { "value": 0.05, "verify": true } },
+          { "from": 500000, "to": 1000000, "verify": true, "rate": { "value": 0.20, "verify": true } },
+          { "from": 1000000, "to": null, "verify": true, "rate": { "value": 0.30, "verify": true } }
+        ],
+        "senior60to79": [
+          { "from": 0, "to": 300000, "verify": true, "rate": { "value": 0, "verify": true } },
+          { "from": 300000, "to": 500000, "verify": true, "rate": { "value": 0.05, "verify": true } },
+          { "from": 500000, "to": 1000000, "verify": true, "rate": { "value": 0.20, "verify": true } },
+          { "from": 1000000, "to": null, "verify": true, "rate": { "value": 0.30, "verify": true } }
+        ],
+        "superSenior80plus": [
+          { "from": 0, "to": 500000, "verify": true, "rate": { "value": 0, "verify": true } },
+          { "from": 500000, "to": 1000000, "verify": true, "rate": { "value": 0.20, "verify": true } },
+          { "from": 1000000, "to": null, "verify": true, "rate": { "value": 0.30, "verify": true } }
+        ]
+      },
+      "standardDeduction": { "value": 50000, "verify": true },
+      "rebate87A": {
+        "incomeLimit": { "value": 500000, "verify": true },
+        "maxAmount": { "value": 12500, "verify": true },
+        "marginalRelief": true,
+        "excludesSpecialRateIncome": true
+      }
+    }
+  },
+  "surcharge": {
+    "bands": [
+      { "above": 5000000, "verify": true, "rate": { "value": 0.10, "verify": true } },
+      { "above": 10000000, "verify": true, "rate": { "value": 0.15, "verify": true } },
+      { "above": 20000000, "verify": true, "rate": { "value": 0.25, "verify": true } },
+      { "above": 50000000, "verify": true, "rate": { "value": 0.37, "verify": true } }
+    ],
+    "regimeCap": {
+      "new": { "value": 0.25, "verify": true },
+      "old": null
+    },
+    "capitalGainsAndDividendsCap": { "value": 0.15, "verify": true },
+    "marginalRelief": true
+  },
+  "cess": { "value": 0.04, "verify": true },
+  "capitalGains": {
+    "periods": [
+      {
+        "from": "2024-07-23",
+        "to": null,
+        "verify": true,
+        "stcg111A": { "value": 0.20, "verify": true },
+        "ltcg112A": { "value": 0.125, "verify": true },
+        "ltcg112AExemption": { "value": 125000, "verify": true },
+        "ltcgOther": { "value": 0.125, "indexation": false, "verify": true },
+        "stcgOther": "slabRate"
+      }
+    ]
+  },
+  "deductions": {
+    "80TTA": { "limit": { "value": 10000, "verify": true }, "appliesTo": "old regime, non-senior" },
+    "80TTB": { "limit": { "value": 50000, "verify": true }, "appliesTo": "old regime, senior citizen" }
+  },
+  "advanceTax": {
+    "threshold": { "value": 10000, "verify": true },
+    "instalments": [
+      { "dueOn": "06-15", "cumulativePct": { "value": 15, "verify": true } },
+      { "dueOn": "09-15", "cumulativePct": { "value": 45, "verify": true } },
+      { "dueOn": "12-15", "cumulativePct": { "value": 75, "verify": true } },
+      { "dueOn": "03-15", "cumulativePct": { "value": 100, "verify": true } }
+    ]
+  },
+  "interest234B": {
+    "monthlyRate": { "value": 0.01, "verify": true },
+    "minAdvanceTaxPct": { "value": 90, "verify": true }
+  },
+  "interest234C": {
+    "monthlyRate": { "value": 0.01, "verify": true },
+    "months": { "value": 3, "verify": true }
+  },
+  "presumptive44AD": {
+    "turnoverLimit": { "value": 20000000, "verify": true },
+    "turnoverLimitWithCashCap": { "value": 30000000, "verify": true },
+    "cashReceiptsCapPct": { "value": 5, "verify": true },
+    "deemedRate": { "value": 0.08, "verify": true },
+    "digitalReceiptsRate": { "value": 0.06, "verify": true }
+  },
+  "sectionRefs": {
+    "legacy": {
+      "newRegime": "115BAC",
+      "rebate": "87A",
+      "standardDeduction": "16(ia)",
+      "stcg111A": "111A",
+      "ltcg112A": "112A",
+      "ltcgOther": "112",
+      "80TTA": "80TTA",
+      "80TTB": "80TTB",
+      "presumptive": "44AD",
+      "interest234B": "234B",
+      "interest234C": "234C"
+    },
+    "new": null
+  },
+  "sources": [
+    "Income-tax Act, 2025 (effective 1-Apr-2026, renumbering not confirmed)",
+    "Values copied from FY2025-26 rules, not checked against FY2026-27 notifications"
+  ]
+}

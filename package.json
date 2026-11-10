@@ -32,7 +32,8 @@
         "dist:mac": "npm run build && electron-builder --mac",
         "dist:linux": "npm run build && electron-builder --linux",
         "dist:win": "npm run build && electron-builder --win",
-        "postinstall": "electron-rebuild -f -w keytar"
+        "postinstall": "electron-rebuild -f -w keytar",
+        "test:tax": "node --test lib/tax/__tests__/*.test.js"
     },
     "build": {
         "asar": false,
@@ -44,7 +45,8 @@
             "help/**/*",
             "lib/**/*",
             "out/**/*",
-            "package.json"
+            "package.json",
+            "!lib/**/__tests__/**"
         ],
         "mac": {
             "target": [

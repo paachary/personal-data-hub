@@ -6,6 +6,7 @@ const { registerVaultHandlers } = require("./vault/vault");
 const { registerSettingsHandlers } = require("./settings/settings");
 const { registerAdminUserHandlers } = require("./admin/users");
 const { registerTodoHandlers } = require("./todos/todos");
+const { registerTaxHandlers } = require("./tax/tax");
 const { ipcMain } = require("electron");
 
 function registerAllHandlers() {
@@ -17,6 +18,7 @@ function registerAllHandlers() {
     registerSettingsHandlers();
     registerAdminUserHandlers();
     registerTodoHandlers();
+    registerTaxHandlers();
 
     ipcMain.on("help:setSection", (event, section) => {
         const { setCurrentSection } = require("../main");

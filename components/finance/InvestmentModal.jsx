@@ -22,6 +22,8 @@ export default function InvestmentModal({
         amount: existing?.amount || "",
         investment_date: existing?.investment_date || "",
         maturity_date: existing?.maturity_date || "",
+        interest_rate: existing?.interest_rate ?? "",
+        compounding: existing?.compounding || "",
     });
 
     const [error, setError] = useState("");
@@ -42,6 +44,10 @@ export default function InvestmentModal({
     }, []);
 
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const isFd =
+        instrumentTypes.find((it) => String(it.id) === String(form.instrument_type_id))?.code === "FD";
+    // Matured FDs from the current FY can be recorded on add only.
+    const allowPastMaturity = isFd && !existing;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -61,8 +67,13 @@ export default function InvestmentModal({
             return setError("Investment date is required.");
         if (form.investment_date > today)
             return setError("Investment date cannot be a future date.");
-        if (form.maturity_date && form.maturity_date <= today)
+        if (form.maturity_date && form.maturity_date <= today && !allowPastMaturity)
             return setError("Maturity date must be greater than today.");
+        if (isFd && form.interest_rate !== "") {
+            const rate = Number(form.interest_rate);
+            if (!Number.isFinite(rate) || rate < 0 || rate > 30)
+                return setError("Interest rate must be between 0 and 30.");
+        }
 
         setSaving(true);
         try {
@@ -70,6 +81,9 @@ export default function InvestmentModal({
                 ...form,
                 user_id: userId,
                 amount: parseFloat(form.amount),
+                interest_rate:
+                    isFd && form.interest_rate !== "" ? parseFloat(form.interest_rate) : null,
+                compounding: isFd && form.compounding ? form.compounding : null,
             };
             if (existing) {
                 await window.electronAPI.investments.update({
@@ -237,13 +251,49 @@ export default function InvestmentModal({
                         <input
                             className={styles.input}
                             type="date"
-                            min={today} // ← must be future
+                            min={allowPastMaturity ? undefined : today} // ← must be future (FD add may be past)
                             value={form.maturity_date}
                             onChange={(e) =>
                                 set("maturity_date", e.target.value)
                             }
                         />
                     </div>
+
+                    {isFd && (
+                        <div className={styles.row}>
+                            <div className={styles.field}>
+                                <label className={styles.label}>
+                                    Interest rate (% p.a.){" "}
+                                    <span className={styles.subtitle}>(optional)</span>
+                                </label>
+                                <input
+                                    className={styles.input}
+                                    type="number"
+                                    min="0"
+                                    max="30"
+                                    step="0.01"
+                                    value={form.interest_rate}
+                                    onChange={(e) => set("interest_rate", e.target.value)}
+                                    placeholder="7.10"
+                                />
+                            </div>
+                            <div className={styles.field}>
+                                <label className={styles.label}>
+                                    Interest type (Cumulative / Payout){" "}
+                                    <span className={styles.subtitle}>(optional)</span>
+                                </label>
+                                <select
+                                    className={styles.select}
+                                    value={form.compounding}
+                                    onChange={(e) => set("compounding", e.target.value)}
+                                >
+                                    <option value="">— Select —</option>
+                                    <option value="cumulative">Cumulative</option>
+                                    <option value="payout">Payout</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
 
                     {error && <p className={styles.error}>{error}</p>}
 
