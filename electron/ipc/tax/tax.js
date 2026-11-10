@@ -1,8 +1,15 @@
-const { ipcMain } = require("electron");
+const fs = require("fs");
+const path = require("path");
+const { ipcMain, dialog } = require("electron");
 const { getFinanceDb } = require("../../../database/finance/financeDb");
 const { getSession } = require("../auth.js");
 const { fyBounds } = require("../../../lib/tax/dates");
 const service = require("../../../lib/tax/service");
+const importers = require("../../../lib/tax/importers");
+const { TEMPLATE_CSV } = require("../../../lib/tax/importers/template");
+
+const IMPORT_KINDS = ["cams", "incomeTemplate", "ais"];
+const MAX_COMMIT_ROWS = 5000;
 
 function requireRegularUser() {
     const session = getSession();
@@ -132,6 +139,50 @@ function registerTaxHandlers() {
             success: true,
             changes: service.setInvestmentInterest(getFinanceDb(), userId, investmentId, { rate, compounding }),
         };
+    });
+
+    // Preview reads the file and parses it. It never writes to the database.
+    ipcMain.handle("tax:import:preview", async (event, payload) => {
+        const userId = requireRegularUser();
+        const { kind, fy } = checkObject(payload);
+        checkFy(fy);
+        if (!IMPORT_KINDS.includes(kind)) throw new TypeError("Unknown import kind.");
+
+        const result = await dialog.showOpenDialog({
+            properties: ["openFile"],
+            filters: [{ name: "Spreadsheet or CSV", extensions: importers.EXTENSIONS }],
+        });
+        if (result.canceled || result.filePaths.length === 0) return { canceled: true };
+
+        const filePath = result.filePaths[0];
+        const ext = path.extname(filePath).slice(1).toLowerCase();
+        const size = fs.statSync(filePath).size;
+        if (size > importers.MAX_FILE_BYTES) throw new Error("The file is larger than 10 MB.");
+        const buffer = fs.readFileSync(filePath);
+
+        const preview = importers.previewImport(getFinanceDb(), userId, kind, buffer, ext, fy);
+        return { success: true, fileName: path.basename(filePath), ...preview };
+    });
+
+    // Commit writes only the rows the user selected in the preview. Each row is re-validated here.
+    ipcMain.handle("tax:import:commit", (event, payload) => {
+        const userId = requireRegularUser();
+        const { kind, fy, rows } = checkObject(payload);
+        checkFy(fy);
+        if (!Array.isArray(rows) || rows.length > MAX_COMMIT_ROWS) throw new TypeError("Invalid rows.");
+        const result = importers.commitRows(getFinanceDb(), userId, fy, kind, rows);
+        return { success: true, ...result };
+    });
+
+    ipcMain.handle("tax:import:saveTemplate", async () => {
+        requireRegularUser();
+        const result = await dialog.showSaveDialog({
+            defaultPath: "income-template.csv",
+            filters: [{ name: "CSV", extensions: ["csv"] }],
+        });
+        if (result.canceled || !result.filePath) return { canceled: true };
+        fs.writeFileSync(result.filePath, TEMPLATE_CSV, "utf8");
+        return { success: true };
     });
 }
 

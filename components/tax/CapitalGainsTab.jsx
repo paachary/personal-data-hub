@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import styles from "../finance/finance.module.css";
 import taxStyles from "./tax.module.css";
 import { errorMessage, formatAmount, formatDate, toNumberOrNull } from "./format";
+import ImportDialog from "./ImportDialog";
 
 const CATEGORY_OPTIONS = [
     { value: "stcg111A", label: "STCG on listed equity (111A)", short: "STCG 111A" },
@@ -60,6 +61,7 @@ export default function CapitalGainsTab({ fy, exemption }) {
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [editing, setEditing] = useState(null); // null | "new" | row id
+    const [importing, setImporting] = useState(false);
 
     const load = useCallback(() => window.electronAPI.tax.capitalGains.list(fy), [fy]);
 
@@ -128,11 +130,23 @@ export default function CapitalGainsTab({ fy, exemption }) {
                 <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setEditing("new")}>
                     Add gain
                 </button>
-                <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} disabled
-                    title="Coming in step 4" aria-disabled="true">
+                <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setImporting(true)}>
                     Import
                 </button>
             </div>
+
+            {importing && (
+                <ImportDialog
+                    kind="cams"
+                    fy={fy}
+                    onClose={() => setImporting(false)}
+                    onImported={async (text) => {
+                        setImporting(false);
+                        setMessage(text);
+                        await refresh();
+                    }}
+                />
+            )}
 
             {editing && (
                 <CapitalGainForm

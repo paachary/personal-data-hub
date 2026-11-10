@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import styles from "../finance/finance.module.css";
 import taxStyles from "./tax.module.css";
 import { errorMessage, formatAmount, toNumberOrNull } from "./format";
+import ImportDialog from "./ImportDialog";
 
 const INTEREST_KINDS = [
     { value: "interest_savings", label: "Savings account interest" },
@@ -26,6 +27,7 @@ export default function IncomeTab({ fy }) {
     const [pastDividendTotals, setPastDividendTotals] = useState([]);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [importing, setImporting] = useState(false);
 
     const fetchAll = useCallback(async () => {
         const years = await window.electronAPI.tax.financialYears();
@@ -98,6 +100,26 @@ export default function IncomeTab({ fy }) {
         <div>
             {error && <div className={styles.error}>{error}</div>}
             {message && <div className={`${taxStyles.banner} ${taxStyles.info}`} role="status">{message}</div>}
+
+            <div className={styles.actions} style={{ margin: "12px 0" }}>
+                <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setImporting(true)}>
+                    Import
+                </button>
+            </div>
+
+            {importing && (
+                <ImportDialog
+                    kind="income"
+                    fy={fy}
+                    onClose={() => setImporting(false)}
+                    onImported={async (text) => {
+                        setImporting(false);
+                        setError("");
+                        setMessage(text);
+                        await load();
+                    }}
+                />
+            )}
 
             <FdSection
                 rows={fdRows}

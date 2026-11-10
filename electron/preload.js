@@ -136,6 +136,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
         investments: {
             setInterest: (data) => ipcRenderer.invoke("tax:investments:setInterest", data),
         },
+        import: {
+            preview: (kind, fy) => ipcRenderer.invoke("tax:import:preview", { kind, fy }),
+            commit: (payload) => ipcRenderer.invoke("tax:import:commit", payload),
+            saveTemplate: () => ipcRenderer.invoke("tax:import:saveTemplate"),
+        },
     },
 
     finance: {
