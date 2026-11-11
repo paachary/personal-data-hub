@@ -77,8 +77,8 @@ export default function CapitalGainsTab({ fy, exemption }) {
 
     const refresh = async () => setRows(await load());
 
-    if (loadError) return <div className={styles.error}>{loadError}</div>;
-    if (!rows) return <div className={styles.empty}><p>Loading capital gains…</p></div>;
+    if (loadError) return <div className={taxStyles.error}>{loadError}</div>;
+    if (!rows) return <div className={taxStyles.empty}><p>Loading capital gains…</p></div>;
 
     const sumWhere = (cats) => rows
         .filter((r) => cats.includes(r.category))
@@ -102,7 +102,7 @@ export default function CapitalGainsTab({ fy, exemption }) {
 
     return (
         <div>
-            {error && <div className={styles.error}>{error}</div>}
+            {error && <div className={taxStyles.error}>{error}</div>}
             {message && <div className={`${taxStyles.banner} ${taxStyles.info}`} role="status">{message}</div>}
             {reviewCount > 0 && (
                 <div className={`${taxStyles.banner} ${taxStyles.warning}`} role="alert">
@@ -273,7 +273,7 @@ function CapitalGainForm({ fy, existing, onCancel, onSaved }) {
             <h3 className={taxStyles.subsectionTitle} style={{ gridColumn: "1 / -1" }}>
                 {existing ? "Edit capital gain" : "Add capital gain"}
             </h3>
-            {formError && <div className={styles.error} style={{ gridColumn: "1 / -1" }}>{formError}</div>}
+            {formError && <div className={taxStyles.error} style={{ gridColumn: "1 / -1" }}>{formError}</div>}
 
             <div className={styles.field}>
                 <label className={styles.label} htmlFor="cg-category">Category</label>

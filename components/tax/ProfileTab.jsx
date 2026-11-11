@@ -97,8 +97,8 @@ export default function ProfileTab({ fy, onSaved }) {
         };
     }, [fy]);
 
-    if (loadError) return <div className={styles.error}>{loadError}</div>;
-    if (!form) return <div className={styles.empty}><p>Loading profile…</p></div>;
+    if (loadError) return <div className={taxStyles.error}>{loadError}</div>;
+    if (!form) return <div className={taxStyles.empty}><p>Loading profile…</p></div>;
 
     const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
     const setDeduction = (key, value) =>
@@ -160,7 +160,7 @@ export default function ProfileTab({ fy, onSaved }) {
 
     return (
         <form onSubmit={handleSubmit}>
-            {error && <div className={styles.error}>{error}</div>}
+            {error && <div className={taxStyles.error}>{error}</div>}
             {message && <div className={`${taxStyles.banner} ${taxStyles.info}`} role="status">{message}</div>}
 
             <div className={styles.fields}>

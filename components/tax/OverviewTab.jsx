@@ -72,18 +72,18 @@ export default function OverviewTab({ fy }) {
     }, [fy]);
 
     if (state.status === "loading") {
-        return <div className={styles.empty}><p>Loading tax overview…</p></div>;
+        return <div className={taxStyles.empty}><p>Loading tax overview…</p></div>;
     }
 
     if (state.status === "error") {
-        return <div className={styles.error}>{state.error}</div>;
+        return <div className={taxStyles.error}>{state.error}</div>;
     }
 
     const data = state.data;
 
     if (isEmptyOverview(data)) {
         return (
-            <div className={styles.empty}>
+            <div className={taxStyles.empty}>
                 <p>No tax data for FY {fy} yet.</p>
                 <p>Save your tax profile and add income, payments or gains to see an estimate.</p>
             </div>

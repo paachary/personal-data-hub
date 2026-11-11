@@ -81,8 +81,8 @@ export default function IncomeTab({ fy }) {
         }
     };
 
-    if (state.status === "loading") return <div className={styles.empty}><p>Loading income…</p></div>;
-    if (state.status === "error") return <div className={styles.error}>{state.error}</div>;
+    if (state.status === "loading") return <div className={taxStyles.empty}><p>Loading income…</p></div>;
+    if (state.status === "error") return <div className={taxStyles.error}>{state.error}</div>;
 
     const overrides = sources.filter((s) => s.is_override);
     const overrideByInvestment = new Map(overrides.map((s) => [s.investment_id, s]));
@@ -98,7 +98,7 @@ export default function IncomeTab({ fy }) {
 
     return (
         <div>
-            {error && <div className={styles.error}>{error}</div>}
+            {error && <div className={taxStyles.error}>{error}</div>}
             {message && <div className={`${taxStyles.banner} ${taxStyles.info}`} role="status">{message}</div>}
 
             <div className={styles.actions} style={{ margin: "12px 0" }}>
@@ -286,7 +286,7 @@ function FdSection({ rows, overrideByInvestment, fy, onAddOverride, onUpdateOver
 
             {editing && (
                 <form onSubmit={submit} className={styles.fields} style={{ marginTop: 12 }}>
-                    {formError && <div className={styles.error}>{formError}</div>}
+                    {formError && <div className={taxStyles.error}>{formError}</div>}
                     <div className={styles.field}>
                         <label className={styles.label} htmlFor="fd-override-amount">
                             Interest for {editing.name} (₹), replaces the automatic figure
@@ -322,7 +322,7 @@ function InterestRowsSection({ title, rows, onAdd, onRemove }) {
             <h3 className={taxStyles.subsectionTitle}>{title}</h3>
             <SourceTable rows={rows} labelFor={(r) => INTEREST_KINDS.find((k) => k.value === r.kind)?.label} onRemove={onRemove} />
             <form onSubmit={submit} className={styles.fields} style={{ marginTop: 12 }}>
-                {formError && <div className={styles.error}>{formError}</div>}
+                {formError && <div className={taxStyles.error}>{formError}</div>}
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="interest-kind">Type</label>
                     <select id="interest-kind" className={styles.select} value={form.kind}
@@ -413,7 +413,7 @@ function DividendSection({ fy, history, suggestedForecast, forecastRow, onAddHis
             </div>
 
             <form onSubmit={submitHistory} className={styles.fields} style={{ marginTop: 12 }}>
-                {formError && <div className={styles.error}>{formError}</div>}
+                {formError && <div className={taxStyles.error}>{formError}</div>}
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="div-source">Company or fund</label>
                     <input id="div-source" className={styles.input} value={form.source_label}
@@ -430,7 +430,7 @@ function DividendSection({ fy, history, suggestedForecast, forecastRow, onAddHis
             </form>
 
             <form onSubmit={submitForecast} className={styles.fields} style={{ marginTop: 16 }}>
-                {forecastError && <div className={styles.error}>{forecastError}</div>}
+                {forecastError && <div className={taxStyles.error}>{forecastError}</div>}
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="div-forecast">
                         Dividend forecast for FY {fy} (₹)
@@ -478,7 +478,7 @@ function OtherIncomeSection({ rows, onAdd, onRemove }) {
             </p>
             <SourceTable rows={rows} labelFor={() => "Other"} onRemove={onRemove} />
             <form onSubmit={submit} className={styles.fields} style={{ marginTop: 12 }}>
-                {formError && <div className={styles.error}>{formError}</div>}
+                {formError && <div className={taxStyles.error}>{formError}</div>}
                 <div className={styles.field}>
                     <label className={styles.label} htmlFor="other-label">Description</label>
                     <input id="other-label" className={styles.input} value={form.label}

@@ -99,7 +99,7 @@ export default function ImportDialog({ kind, fy, onClose, onImported }) {
                     <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
                 </div>
 
-                {error && <div className={styles.error}>{error}</div>}
+                {error && <div className={taxStyles.error}>{error}</div>}
 
                 {isCams ? (
                     <p className={taxStyles.assumptions}>

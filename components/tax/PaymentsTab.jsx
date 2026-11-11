@@ -38,8 +38,8 @@ export default function PaymentsTab({ fy }) {
 
     const refresh = async () => setData(await load());
 
-    if (loadError) return <div className={styles.error}>{loadError}</div>;
-    if (!data) return <div className={styles.empty}><p>Loading payments…</p></div>;
+    if (loadError) return <div className={taxStyles.error}>{loadError}</div>;
+    if (!data) return <div className={taxStyles.empty}><p>Loading payments…</p></div>;
 
     const payments = data.payments || [];
     const instalments = data.schedule?.instalments || [];
@@ -60,7 +60,7 @@ export default function PaymentsTab({ fy }) {
 
     return (
         <div>
-            {error && <div className={styles.error}>{error}</div>}
+            {error && <div className={taxStyles.error}>{error}</div>}
             {message && <div className={`${taxStyles.banner} ${taxStyles.info}`} role="status">{message}</div>}
 
             <div className={styles.summaryGrid}>
@@ -76,7 +76,7 @@ export default function PaymentsTab({ fy }) {
                     A payment counts towards every instalment due on or after its payment date.
                 </p>
                 {instalments.length === 0 ? (
-                    <div className={styles.empty}><p>No instalment schedule is available for this year.</p></div>
+                    <div className={taxStyles.empty}><p>No instalment schedule is available for this year.</p></div>
                 ) : (
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
@@ -197,7 +197,7 @@ function PaymentForm({ fy, onCancel, onSaved }) {
     return (
         <form onSubmit={handleSubmit} className={styles.fields} style={{ marginBottom: 16 }}>
             <h3 className={taxStyles.subsectionTitle} style={{ gridColumn: "1 / -1" }}>Record payment</h3>
-            {formError && <div className={styles.error} style={{ gridColumn: "1 / -1" }}>{formError}</div>}
+            {formError && <div className={taxStyles.error} style={{ gridColumn: "1 / -1" }}>{formError}</div>}
 
             <div className={styles.field}>
                 <label className={styles.label} htmlFor="pay-date">Paid on (in FY {fy})</label>

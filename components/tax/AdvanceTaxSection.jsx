@@ -60,7 +60,7 @@ export default function AdvanceTaxSection() {
     const exemption112A = periods[periods.length - 1]?.ltcg112AExemption?.value ?? null;
 
     return (
-        <section className={styles.section}>
+        <section className={`${styles.section} ${taxStyles.taxSection}`}>
             <div className={taxStyles.fyRow}>
                 <label className={taxStyles.fyLabel} htmlFor="tax-fy">
                     Financial year
@@ -79,7 +79,7 @@ export default function AdvanceTaxSection() {
                 </select>
             </div>
 
-            {yearsError && <div className={styles.error}>{yearsError}</div>}
+            {yearsError && <div className={taxStyles.error}>{yearsError}</div>}
 
             <div className={`${taxStyles.banner} ${taxStyles.disclaimer}`} role="note">
                 Estimates only, not tax advice. Verify on the Income Tax portal or with a CA.

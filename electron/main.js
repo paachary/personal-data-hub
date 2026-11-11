@@ -11,6 +11,9 @@ const {
 const { closeFinanceDb } = require("../database/finance/financeDb");
 const { getHelpContent } = require("./help");
 
+// Pinned so dev and packaged builds share the existing production data folder.
+app.setPath("userData", path.join(app.getPath("appData"), "personal-data-hub"));
+
 function openHelpWindow(page = "dashboard") {
     const helpWin = new BrowserWindow({
         width: 800,

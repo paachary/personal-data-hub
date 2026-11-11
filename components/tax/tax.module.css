@@ -24,6 +24,37 @@
     color: #333;
 }
 
+/* The finance section background is light grey, so the shared finance text colours are too pale here. */
+.taxSection {
+    color: #111827;
+}
+
+.taxSection label {
+    color: #111827;
+}
+
+.taxSection [role="tab"][aria-selected="false"] {
+    color: #1f2937;
+    border-color: #6b7280;
+}
+
+.taxSection [role="tab"][aria-selected="false"]:hover {
+    color: #1e3a8a;
+    border-color: #1e40af;
+}
+
+.error {
+    color: #b91c1c;
+    font-size: 0.82rem;
+    margin: 0;
+}
+
+.empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #1f2937;
+}
+
 .fyRow {
     display: flex;
     align-items: center;
