@@ -215,6 +215,7 @@ async function initFinanceDb() {
 
     for (const s of [
         { code: "FD", description: "Fixed Deposit" },
+        { code: "RD", description: "Recurring Deposit" },
         { code: "MF", description: "Mutual Funds" },
         { code: "LIC", description: "Life Insurance" },
         { code: "NPS", description: "National Pension Scheme" },

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import styles from "./finance.module.css";
 
+const INTEREST_BEARING_CODES = ["FD", "RD", "BONDS", "PPF", "NPS"];
+
 export default function InvestmentModal({
     existing = null,
     accounts = [],
@@ -44,8 +46,10 @@ export default function InvestmentModal({
     }, []);
 
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-    const isFd =
-        instrumentTypes.find((it) => String(it.id) === String(form.instrument_type_id))?.code === "FD";
+    const selectedCode =
+        instrumentTypes.find((it) => String(it.id) === String(form.instrument_type_id))?.code;
+    const isFd = selectedCode === "FD";
+    const showInterest = INTEREST_BEARING_CODES.includes(selectedCode);
     // Matured FDs from the current FY can be recorded on add only.
     const allowPastMaturity = isFd && !existing;
 
@@ -69,7 +73,7 @@ export default function InvestmentModal({
             return setError("Investment date cannot be a future date.");
         if (form.maturity_date && form.maturity_date <= today && !allowPastMaturity)
             return setError("Maturity date must be greater than today.");
-        if (isFd && form.interest_rate !== "") {
+        if (showInterest && form.interest_rate !== "") {
             const rate = Number(form.interest_rate);
             if (!Number.isFinite(rate) || rate < 0 || rate > 30)
                 return setError("Interest rate must be between 0 and 30.");
@@ -77,13 +81,17 @@ export default function InvestmentModal({
 
         setSaving(true);
         try {
+            // Hidden fields keep the stored values so editing a non-interest investment doesn't wipe them.
             const payload = {
                 ...form,
                 user_id: userId,
                 amount: parseFloat(form.amount),
-                interest_rate:
-                    isFd && form.interest_rate !== "" ? parseFloat(form.interest_rate) : null,
-                compounding: isFd && form.compounding ? form.compounding : null,
+                interest_rate: showInterest
+                    ? form.interest_rate !== "" ? parseFloat(form.interest_rate) : null
+                    : existing?.interest_rate ?? null,
+                compounding: showInterest
+                    ? form.compounding || null
+                    : existing?.compounding ?? null,
             };
             if (existing) {
                 await window.electronAPI.investments.update({
@@ -259,7 +267,7 @@ export default function InvestmentModal({
                         />
                     </div>
 
-                    {isFd && (
+                    {showInterest && (
                         <div className={styles.row}>
                             <div className={styles.field}>
                                 <label className={styles.label}>
