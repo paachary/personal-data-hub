@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
 import Sidebar from "@/components/dashboard/Sidebar";
 import DashboardOverview from "@/components/dashboard/DashboardOverview";
+import AdvanceTaxCard from "@/components/dashboard/AdvanceTaxCard";
 import PasswordsSection from "@/components/vault/PasswordsSection";
 import NotesSection from "@/components/notes/NotesSection";
 import BanksSection from "@/components/finance/BanksSection";
@@ -105,7 +106,10 @@ export default function DashboardPage() {
                     </p>
                 </header>
                 {activeSection === "dashboard" && (
-                    <DashboardOverview userId={userId} />
+                    <>
+                        <DashboardOverview userId={userId} />
+                        {!isAdmin && <AdvanceTaxCard />}
+                    </>
                 )}
                 {activeSection === "passwords" &&
                     (isAdmin ? (

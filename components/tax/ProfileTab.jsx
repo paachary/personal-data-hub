@@ -38,6 +38,7 @@ function emptyForm() {
         regime_choice: "compare",
         has_business_income: false,
         presumptive_44ad: false,
+        reminders_enabled: false,
         salary: "",
         house_property: "",
         business_income: "",
@@ -61,6 +62,7 @@ function fromSaved(profile) {
         regime_choice: profile.regime_choice,
         has_business_income: Boolean(profile.has_business_income),
         presumptive_44ad: Boolean(profile.presumptive_44ad),
+        reminders_enabled: Boolean(profile.reminders_enabled),
         salary: String(profile.salary ?? ""),
         house_property: String(profile.house_property ?? ""),
         business_income: String(profile.business_income ?? ""),
@@ -138,6 +140,7 @@ export default function ProfileTab({ fy, onSaved }) {
                 regime_choice: form.regime_choice,
                 has_business_income: form.has_business_income,
                 presumptive_44ad: form.presumptive_44ad,
+                reminders_enabled: form.reminders_enabled,
                 salary: numbers.salary,
                 house_property: numbers.house_property,
                 business_income: numbers.business_income,
@@ -186,6 +189,15 @@ export default function ProfileTab({ fy, onSaved }) {
                     <input type="checkbox" checked={form.presumptive_44ad} disabled={!form.has_business_income}
                         onChange={(e) => set("presumptive_44ad", e.target.checked)} /> Presumptive scheme (44AD)
                 </label>
+
+                <label className={styles.label}>
+                    <input type="checkbox" checked={form.reminders_enabled}
+                        onChange={(e) => set("reminders_enabled", e.target.checked)} /> Create reminders for advance tax due dates
+                </label>
+                <p className={taxStyles.warning}>
+                    Reminders are stored as to-do items. They are not encrypted, and every local user can see them.
+                    They use only generic titles and no amounts.
+                </p>
 
                 {NUMBER_FIELDS.map(([key, label]) => (
                     <div className={styles.field} key={key}>

@@ -78,6 +78,7 @@ It is designed as a single, unified place to store:
 | 📉 **Spending Analytics** | Weekly, monthly and yearly summaries, trend charts, opening/closing balance and credit/debit totals |
 | 📑 **Reports**           | Sysadmin reports: all active investments, SIP-only investments, monthly debit summary by user and by bank |
 | 📤 **Excel Export**      | Export investments to XLSX                                                                        |
+| 🧾 **Advance Tax**       | Per-FY advance tax estimate, old vs new regime, instalment shortfalls, optional due-date reminders, Excel and Word export (see [Advance Tax](#advance-tax)) |
 | 🌍 **Location Dropdowns** | Country, state and city pickers on registration and profile (uses an online lookup, see [Security](#security)) |
 | 🔐 **MFA**               | TOTP-based Two-Factor Authentication (Google Authenticator, Authy, etc.)                          |
 | 🛡️ **Password Policy**   | 8–50 characters with uppercase, lowercase, number and special character required                 |
@@ -381,6 +382,19 @@ Available on the **Statements** page for each bank account.
 Supported bank layouts: HDFC, ICICI, SBI, Union Bank of India and Standard Chartered, in CSV and Excel. Other banks use the generic CSV or Excel parser, which works only if the columns match its expected layout.
 
 > **PDF statements are not supported yet.** The import screen rejects PDF files. Export your statement as CSV or Excel from your bank's portal.
+
+---
+
+## Advance Tax
+
+Available on the **Advance Tax** page for regular users. The sysadmin cannot access it.
+
+1. Enter your tax profile for the financial year (FY) on the **Profile** tab.
+2. Record income, capital gains and advance tax payments. The **Overview** tab shows the computed tax, the recommended regime and the instalment schedule with shortfalls.
+3. Turn on **Create reminders for advance tax due dates** in **Profile** to add a to-do for each instalment with an outstanding amount, set 7 days before its due date.
+4. Use **Export Excel** or **Export Word** on the **Overview** tab to save a summary.
+
+> **Plaintext warning.** Exported Excel and Word files are not encrypted. Reminders are stored as normal to-dos in the unencrypted master database and are visible to any local user. The app asks you to confirm before each export.
 
 ---
 

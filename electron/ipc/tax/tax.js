@@ -1,12 +1,15 @@
 const fs = require("fs");
 const path = require("path");
 const { ipcMain, dialog } = require("electron");
+const XLSX = require("xlsx");
 const { getFinanceDb } = require("../../../database/finance/financeDb");
 const { getSession } = require("../auth.js");
 const { fyBounds } = require("../../../lib/tax/dates");
 const service = require("../../../lib/tax/service");
 const importers = require("../../../lib/tax/importers");
 const { TEMPLATE_CSV } = require("../../../lib/tax/importers/template");
+const { buildTaxWorkbook, buildTaxSummaryDocx } = require("../../../lib/exporters/taxExporter");
+const { syncTaxReminders, removeTaxReminders } = require("../todos/todos");
 
 const IMPORT_KINDS = ["cams", "incomeTemplate", "ais"];
 const MAX_COMMIT_ROWS = 5000;
@@ -48,6 +51,29 @@ function splitId(payload) {
     const { id, ...data } = checkObject(payload);
     checkId(id);
     return { id, data };
+}
+
+// Creates tax todos when reminders are on, and removes pending ones when off.
+function syncRemindersFor(db, userId, fy, enabled) {
+    if (!enabled) {
+        removeTaxReminders(userId, fy);
+        return;
+    }
+    const overview = service.getOverview(db, userId, fy);
+    syncTaxReminders(userId, fy, overview.schedule?.instalments ?? []);
+}
+
+// Shows a plaintext warning and returns true only when the user confirms.
+async function confirmPlaintextExport(kind) {
+    const result = await dialog.showMessageBox({
+        type: "warning",
+        buttons: ["Export", "Cancel"],
+        defaultId: 1,
+        cancelId: 1,
+        message: `Export tax ${kind} as a plain file?`,
+        detail: "The exported file is not encrypted. Anyone with access to it can read your tax data.",
+    });
+    return result.response === 0;
 }
 
 function registerCrudChannels(name, crud) {
@@ -97,7 +123,11 @@ function registerTaxHandlers() {
     ipcMain.handle("tax:profile:save", (event, payload) => {
         const userId = requireRegularUser();
         const { fy, data } = splitFy(payload);
-        return { success: true, profile: service.saveTaxProfile(getFinanceDb(), userId, fy, data) };
+        if ("reminders_enabled" in data) data.reminders_enabled = data.reminders_enabled ? 1 : 0;
+        const db = getFinanceDb();
+        const profile = service.saveTaxProfile(db, userId, fy, data);
+        syncRemindersFor(db, userId, fy, profile.reminders_enabled === 1);
+        return { success: true, profile };
     });
 
     registerCrudChannels("incomeSources", service.incomeSources);
@@ -182,6 +212,34 @@ function registerTaxHandlers() {
         });
         if (result.canceled || !result.filePath) return { canceled: true };
         fs.writeFileSync(result.filePath, TEMPLATE_CSV, "utf8");
+        return { success: true };
+    });
+
+    ipcMain.handle("tax:exportExcel", async (event, fy) => {
+        const userId = requireRegularUser();
+        checkFy(fy);
+        if (!(await confirmPlaintextExport("data as Excel"))) return { canceled: true };
+        const overview = service.getOverview(getFinanceDb(), userId, fy);
+        const result = await dialog.showSaveDialog({
+            defaultPath: `advance-tax-${fy}.xlsx`,
+            filters: [{ name: "Excel", extensions: ["xlsx"] }],
+        });
+        if (result.canceled || !result.filePath) return { canceled: true };
+        XLSX.writeFile(buildTaxWorkbook({ ...overview, fy }), result.filePath);
+        return { success: true };
+    });
+
+    ipcMain.handle("tax:exportWord", async (event, fy) => {
+        const userId = requireRegularUser();
+        checkFy(fy);
+        if (!(await confirmPlaintextExport("summary as Word"))) return { canceled: true };
+        const overview = service.getOverview(getFinanceDb(), userId, fy);
+        const result = await dialog.showSaveDialog({
+            defaultPath: `advance-tax-${fy}.docx`,
+            filters: [{ name: "Word", extensions: ["docx"] }],
+        });
+        if (result.canceled || !result.filePath) return { canceled: true };
+        fs.writeFileSync(result.filePath, await buildTaxSummaryDocx({ ...overview, fy }));
         return { success: true };
     });
 }

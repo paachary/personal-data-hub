@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import styles from "../finance/finance.module.css";
 import taxStyles from "./tax.module.css";
+import { errorMessage } from "./format";
 
 const inr = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -52,6 +53,8 @@ function isEmptyOverview(data) {
 
 export default function OverviewTab({ fy }) {
     const [state, setState] = useState({ status: "loading", data: null, error: null });
+    const [exportMessage, setExportMessage] = useState("");
+    const [exporting, setExporting] = useState(false);
 
     useEffect(() => {
         let active = true;
@@ -98,8 +101,29 @@ export default function OverviewTab({ fy }) {
         Paid: i.paid,
     }));
 
+    const runExport = async (kind) => {
+        setExportMessage("");
+        setExporting(true);
+        try {
+            const api = window.electronAPI.tax;
+            const result = kind === "excel" ? await api.exportExcel(fy) : await api.exportWord(fy);
+            if (result?.success) setExportMessage(`Exported ${kind === "excel" ? "Excel" : "Word"} file.`);
+        } catch (err) {
+            setExportMessage(errorMessage(err, "Export failed."));
+        } finally {
+            setExporting(false);
+        }
+    };
+
     return (
         <div>
+            <div className={styles.actions} style={{ marginBottom: 12 }}>
+                <button type="button" className={`${styles.btn}`} disabled={exporting}
+                    onClick={() => runExport("excel")}>Export Excel</button>
+                <button type="button" className={`${styles.btn}`} disabled={exporting}
+                    onClick={() => runExport("word")}>Export Word</button>
+                {exportMessage && <span style={{ marginLeft: 12 }}>{exportMessage}</span>}
+            </div>
             <div className={styles.summaryGrid}>
                 <div className={styles.summaryCard}>
                     <div className={styles.summaryLabel}>Recommended regime</div>

@@ -83,7 +83,7 @@ Guidance for AI coding agents working in this repository. Verified against the c
 Notes:
 - `@electron/rebuild` is a devDependency, but `postinstall` uses `electron-rebuild`. TODO: confirm both are needed.
 - `sharp` is required by [scripts/generate-icon.js](scripts/generate-icon.js) but is **not declared** in `package.json`. Install it before running that script. TODO: confirm.
-- No test framework is installed. No Prettier config exists.
+- No test framework is installed. `node:test` is used only for `lib/tax/__tests__/` (`npm run test:tax`). No Prettier config exists.
 
 ---
 
@@ -144,6 +144,7 @@ Namespaces exposed on `window.electronAPI`, from [electron/preload.js](electron/
 | `accounts` | `accounts:add`, `accounts:update`, and reads |
 | `investments` | `investments:*`, `investments:exportToExcel` |
 | `finance` | `finance:selectStatementFile`, `finance:importStatements`, `finance:getStatements`, `finance:getStatementTransactions`, `finance:getTrendData`, `finance:clearStatementData`, `finance:addInstrumentType`, `finance:addInvestmentType` and related |
+| `tax` | `tax:getOverview`, `tax:profile:get`, `tax:profile:save`, `tax:exportExcel`, `tax:exportWord`, and the income, payments, capital gains and import channels (`electron/ipc/tax/tax.js`) |
 | `settings` | `settings:getProfile`, `settings:updateProfile`, `settings:changePassword` |
 | `admin.users` | `admin:users:*`, including `admin:users:resetPassword` |
 
@@ -449,6 +450,14 @@ For each module: files, data, and behaviour.
 - `docx` for passwords and notes (`vault.js` ~lines 566–790). `xlsx` for investments.
 - Both write plaintext. The path is chosen by the user through a save dialog.
 
+### 8.11 Advance tax
+- Files: `electron/ipc/tax/tax.js`, `lib/tax/` (service, schedule, rules, engine), `lib/exporters/taxExporter.js`, `components/tax/`, `components/dashboard/AdvanceTaxCard.jsx`, `help/advance-tax.md`.
+- Channels: `tax:*` (see §4.4). Regular users only. Handlers call `requireRegularUser()`.
+- Data: tax tables in `finance.db` (`database/finance/taxSchema.js`). `tax_profile.reminders_enabled` is added by an ad-hoc migration.
+- Reminders (opt-in): `syncTaxReminders` and `removeTaxReminders` in `electron/ipc/todos/todos.js` create `todos` rows with `source='tax'` and `source_ref = tax:<userId>:<fy>:<dueDate>`. Reminders are 7 days before the due date. Todos are plaintext and shared (see §6.6).
+- Exports: `tax:exportExcel` and `tax:exportWord` write plaintext after a confirm dialog (`confirmPlaintextExport`).
+- Dashboard card: shown only when `!isAdmin` in `app/dashboard/page.js`.
+
 ---
 
 ## 9. Setup and commands
@@ -468,8 +477,9 @@ Only commands that exist in `package.json`:
 | Package (Linux) | `npm run dist:linux` |
 | Package (Windows) | `npm run dist:win` |
 | Lint | `npx eslint .` (no npm script) |
+| Tax tests | `npm run test:tax`. In this environment, `better-sqlite3` is built for Electron's ABI, so run `ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron --test lib/tax/__tests__/*.test.js` if plain Node fails with `NODE_MODULE_VERSION` |
 
-Missing from `package.json`: test, format, typecheck. There are no test files outside `node_modules` and `dist`.
+Missing from `package.json`: format and typecheck. `test:tax` covers only `lib/tax/`. Other folders have no test files outside `node_modules` and `dist`.
 
 Lint baseline:
 - `npx eslint .` reports 6 problems (5 errors, 1 warning). Five of them are in `dist/` build output. `eslint.config.mjs` ignores `.next`, `out`, `build` but not `dist/`.
@@ -507,7 +517,7 @@ Inferred from the code and ESLint config. Verify before changing.
 ## 11. Testing and verification
 
 ### 11.1 Automated checks
-- No test framework or test files exist. Do not claim tests pass.
+- No tests for the app outside `lib/tax/`. `npm run test:tax` runs `node:test` suites there. Do not claim other areas are tested.
 - Available check: `npx eslint .`, or the source-only variant in §9.
 - Build check: `npm run build` (overwrites `out/` and `.next/`). Run it when a change affects the static export. TODO: confirm it succeeds on the current tree.
 

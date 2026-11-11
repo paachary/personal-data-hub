@@ -104,6 +104,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     tax: {
         getOverview: (fy) => ipcRenderer.invoke("tax:getOverview", fy),
+        exportExcel: (fy) => ipcRenderer.invoke("tax:exportExcel", fy),
+        exportWord: (fy) => ipcRenderer.invoke("tax:exportWord", fy),
         financialYears: () => ipcRenderer.invoke("tax:financialYears"),
         profile: {
             get: (fy) => ipcRenderer.invoke("tax:profile:get", fy),

@@ -100,20 +100,28 @@ const INVESTMENT_COLUMNS = [
     },
 ];
 
+const TAX_PROFILE_COLUMNS = [
+    { name: "reminders_enabled", definition: "INTEGER NOT NULL DEFAULT 0" },
+];
+
 function existingColumns(db, table) {
     return new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name));
+}
+
+function addMissingColumns(db, table, columns) {
+    const present = existingColumns(db, table);
+    for (const column of columns) {
+        if (!present.has(column.name)) {
+            db.exec(`ALTER TABLE ${table} ADD COLUMN ${column.name} ${column.definition}`);
+        }
+    }
 }
 
 function applyTaxSchema(db) {
     db.transaction(() => {
         db.exec(TAX_TABLES_SQL);
-
-        const present = existingColumns(db, "investments");
-        for (const column of INVESTMENT_COLUMNS) {
-            if (!present.has(column.name)) {
-                db.exec(`ALTER TABLE investments ADD COLUMN ${column.name} ${column.definition}`);
-            }
-        }
+        addMissingColumns(db, "investments", INVESTMENT_COLUMNS);
+        addMissingColumns(db, "tax_profile", TAX_PROFILE_COLUMNS);
     })();
 }
 

@@ -128,6 +128,60 @@ function generateVaultReminders(entries) {
     }
 }
 
+// ── Tax Reminders ─────────────────────────────────────────
+// Tax todos carry generic titles only (no amounts). source_ref includes the
+// user id so one user's reminders never dedupe against another's.
+
+const TAX_REMIND_DAYS_BEFORE = 7;
+
+function taxSourceRef(userId, fy, dueDate) {
+    return `tax:${userId}:${fy}:${dueDate}`;
+}
+
+function syncTaxReminders(userId, fy, instalments) {
+    const db = getMasterDb();
+    const now = new Date();
+
+    for (const instalment of instalments) {
+        if (!(instalment.required > 0)) continue;
+
+        const due = new Date(`${instalment.dueDate}T00:00:00`);
+        if (isNaN(due) || due < now) continue;
+
+        const sourceRef = taxSourceRef(userId, fy, instalment.dueDate);
+        const existing = db
+            .prepare(`SELECT id FROM todos WHERE source_ref = ? AND source = 'tax'`)
+            .get(sourceRef);
+        if (existing) continue;
+
+        const remindAt = new Date(due);
+        remindAt.setDate(remindAt.getDate() - TAX_REMIND_DAYS_BEFORE);
+        if (remindAt < now) remindAt.setTime(now.getTime());
+
+        db.prepare(
+            `INSERT INTO todos (id, title, notes, priority, due_date, remind_at, source, source_ref)
+             VALUES (?, ?, ?, 'high', ?, ?, 'tax', ?)`
+        ).run(
+            uuidv4(),
+            `Advance tax instalment due (FY ${fy})`,
+            "Check your advance tax summary in Personal Data Hub.",
+            instalment.dueDate,
+            remindAt.toISOString(),
+            sourceRef
+        );
+    }
+}
+
+function removeTaxReminders(userId, fy) {
+    const prefix = taxSourceRef(userId, fy, "");
+    getMasterDb()
+        .prepare(
+            `DELETE FROM todos WHERE source = 'tax' AND status = 'pending'
+             AND substr(source_ref, 1, ?) = ?`
+        )
+        .run(prefix.length, prefix);
+}
+
 // ── IPC Handlers ──────────────────────────────────────────
 
 function registerTodoHandlers() {
@@ -245,4 +299,6 @@ module.exports = {
     registerTodoHandlers,
     startReminderScheduler,
     stopReminderScheduler,
+    syncTaxReminders,
+    removeTaxReminders,
 };
