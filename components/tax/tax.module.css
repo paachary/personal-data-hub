@@ -97,3 +97,650 @@
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
+
+/* ── Other income (IncomeTab) ───────────────────────────
+   Self-contained tokens: the panel sets its own surface and text colours,
+   so it reads the same regardless of the finance palette around it. */
+.incomeRoot {
+    --inc-page: #f5f7fa;
+    --inc-surface: #ffffff;
+    --inc-surface-muted: #f1f4f8;
+    --inc-border: #e2e6ee;
+    --inc-border-strong: #7b8496;
+    --inc-text: #111827;
+    --inc-text-muted: #4b5563;
+    --inc-row-hover: #f8fafc;
+    --inc-focus: #2563eb;
+    --inc-primary: #1d4ed8;
+    --inc-primary-text: #ffffff;
+    --inc-badge-bg: #92400e;
+    --inc-badge-text: #ffffff;
+    --inc-warn-text: #92400e;
+    --inc-warn-bg: #fffbeb;
+    --inc-warn-border: #d97706;
+    --inc-error-text: #b91c1c;
+    --inc-error-bg: #fef2f2;
+    --inc-info-text: #1e3a8a;
+    --inc-info-bg: #eff6ff;
+    --inc-teal: #0f766e;
+    --inc-teal-soft: #f0fdfa;
+    --inc-blue: #1d4ed8;
+    --inc-blue-soft: #eff6ff;
+    --inc-green: #15803d;
+    --inc-green-soft: #f0fdf4;
+    --inc-slate: #475569;
+    --inc-slate-soft: #f1f5f9;
+
+    background: var(--inc-page);
+    color: var(--inc-text);
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+    .incomeRoot {
+        --inc-page: #0f141e;
+        --inc-surface: #161c29;
+        --inc-surface-muted: #1d2433;
+        --inc-border: #2c3446;
+        --inc-border-strong: #7d8699;
+        --inc-text: #f1f5f9;
+        --inc-text-muted: #b4bccb;
+        --inc-row-hover: #1d2433;
+        --inc-focus: #60a5fa;
+        --inc-primary: #2563eb;
+        --inc-primary-text: #ffffff;
+        --inc-badge-bg: #fcd34d;
+        --inc-badge-text: #111827;
+        --inc-warn-text: #fcd34d;
+        --inc-warn-bg: #2a200e;
+        --inc-warn-border: #b45309;
+        --inc-error-text: #fca5a5;
+        --inc-error-bg: #2a1515;
+        --inc-info-text: #bfdbfe;
+        --inc-info-bg: #13223d;
+        --inc-teal: #5eead4;
+        --inc-teal-soft: #0f2a28;
+        --inc-blue: #93c5fd;
+        --inc-blue-soft: #13223d;
+        --inc-green: #86efac;
+        --inc-green-soft: #112a1c;
+        --inc-slate: #cbd5e1;
+        --inc-slate-soft: #1d2433;
+    }
+}
+
+.accentTeal {
+    --inc-accent: var(--inc-teal);
+    --inc-accent-soft: var(--inc-teal-soft);
+}
+
+.accentBlue {
+    --inc-accent: var(--inc-blue);
+    --inc-accent-soft: var(--inc-blue-soft);
+}
+
+.accentGreen {
+    --inc-accent: var(--inc-green);
+    --inc-accent-soft: var(--inc-green-soft);
+}
+
+.accentSlate {
+    --inc-accent: var(--inc-slate);
+    --inc-accent-soft: var(--inc-slate-soft);
+}
+
+.incHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.incTitle {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.incSubtitle {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    color: var(--inc-text-muted);
+}
+
+.incSummary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.incTile {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 12px 16px;
+    background: var(--inc-surface);
+    border: 1px solid var(--inc-border);
+    border-radius: 10px;
+}
+
+.incTileTotal {
+    border-color: var(--inc-primary);
+}
+
+.incTileValue {
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.incTileTotal .incTileValue {
+    font-size: 1.25rem;
+}
+
+.incMetaLabel {
+    font-size: 0.8125rem;
+    color: var(--inc-text-muted);
+}
+
+.incMeta {
+    font-size: 0.75rem;
+    color: var(--inc-text-muted);
+}
+
+.incTabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    padding: 4px;
+    overflow-x: auto;
+    background: var(--inc-surface-muted);
+    border: 1px solid var(--inc-border);
+    border-radius: 10px;
+}
+
+.incomeRoot .incTab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* Outer tab styles in this file target every [role="tab"], so these selectors are more specific. */
+.incomeRoot .incTab[role="tab"],
+.incomeRoot .incTab[role="tab"][aria-selected="false"] {
+    background: transparent;
+    color: var(--inc-text-muted);
+    border-color: transparent;
+}
+
+.incomeRoot .incTab[role="tab"]:hover {
+    color: var(--inc-text);
+}
+
+.incomeRoot .incTab[role="tab"].incTabActive,
+.incomeRoot .incTab[role="tab"][aria-selected="true"] {
+    background: var(--inc-surface);
+    color: var(--inc-text);
+    border-color: var(--inc-border);
+    font-weight: 600;
+}
+
+.incomeRoot .incTab:focus-visible {
+    outline: 2px solid var(--inc-focus);
+    outline-offset: 2px;
+}
+
+.incBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--inc-badge-bg);
+    color: var(--inc-badge-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.incCard {
+    padding: 20px;
+    background: var(--inc-surface);
+    border: 1px solid var(--inc-border);
+    border-left: 4px solid var(--inc-accent, var(--inc-border-strong));
+    border-radius: 12px;
+}
+
+.incCardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.incCardIcon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--inc-accent-soft, var(--inc-surface-muted));
+    color: var(--inc-accent, var(--inc-text));
+}
+
+.incCardTitle {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+}
+
+.incCardDesc {
+    margin: 2px 0 0;
+    font-size: 0.875rem;
+    color: var(--inc-text-muted);
+}
+
+.incCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.incIcon {
+    width: 18px;
+    height: 18px;
+}
+
+.incAlert {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 0.875rem;
+}
+
+.incCardBody > .incAlert {
+    margin-bottom: 0;
+}
+
+.incAlertWarning {
+    background: var(--inc-warn-bg);
+    border-color: var(--inc-warn-border);
+    color: var(--inc-warn-text);
+}
+
+.incAlertError {
+    background: var(--inc-error-bg);
+    border-color: var(--inc-error-text);
+    color: var(--inc-error-text);
+}
+
+.incAlertInfo {
+    background: var(--inc-info-bg);
+    border-color: var(--inc-border);
+    color: var(--inc-info-text);
+}
+
+.incTableWrap {
+    overflow-x: auto;
+    border: 1px solid var(--inc-border);
+    border-radius: 10px;
+}
+
+.incTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.incTable th {
+    padding: 10px 16px;
+    background: var(--inc-surface-muted);
+    border-bottom: 1px solid var(--inc-border);
+    color: var(--inc-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.incTable td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--inc-border);
+    vertical-align: middle;
+}
+
+.incTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.incTable tbody tr:hover {
+    background: var(--inc-row-hover);
+}
+
+.incTable .incNum {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.incActions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.incStrong {
+    font-weight: 500;
+}
+
+.incMuted {
+    color: var(--inc-text-muted);
+}
+
+.incStatus {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.incStatusWarn {
+    background: var(--inc-warn-bg);
+    border-color: var(--inc-warn-border);
+    color: var(--inc-warn-text);
+}
+
+.incStatusInfo {
+    background: var(--inc-info-bg);
+    color: var(--inc-info-text);
+}
+
+.incTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: 12px;
+    border-top: 1px solid var(--inc-border);
+    font-size: 0.875rem;
+    color: var(--inc-text-muted);
+}
+
+.incTotal strong {
+    color: var(--inc-text);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.incEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 24px 16px;
+    border: 1px dashed var(--inc-border-strong);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.incEmpty p {
+    margin: 0;
+}
+
+.incEmptyTitle {
+    font-weight: 600;
+}
+
+.incHint {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--inc-text-muted);
+}
+
+.incForm {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+}
+
+.incFormCols2 {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+}
+
+.incFormCols3 {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) minmax(0, 1fr) auto;
+}
+
+.incField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.incFormAction {
+    display: flex;
+    align-items: flex-end;
+}
+
+.incomeRoot .incLabel {
+    color: var(--inc-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.incInput {
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    background: var(--inc-surface);
+    border: 1px solid var(--inc-border-strong);
+    border-radius: 8px;
+    color: var(--inc-text);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.incInput:focus-visible {
+    outline: 2px solid var(--inc-focus);
+    outline-offset: 1px;
+    border-color: var(--inc-focus);
+}
+
+.incInput[aria-invalid="true"] {
+    border-color: var(--inc-error-text);
+}
+
+.incBtnGroup {
+    display: flex;
+    gap: 8px;
+}
+
+.incBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.incBtn:focus-visible,
+.incIconBtn:focus-visible {
+    outline: 2px solid var(--inc-focus);
+    outline-offset: 2px;
+}
+
+.incBtnPrimary {
+    background: var(--inc-primary);
+    color: var(--inc-primary-text);
+}
+
+.incBtnPrimary:hover {
+    opacity: 0.92;
+}
+
+.incBtnSecondary {
+    background: var(--inc-surface);
+    border-color: var(--inc-border-strong);
+    color: var(--inc-text);
+}
+
+.incBtnSecondary:hover {
+    background: var(--inc-surface-muted);
+}
+
+.incBtnSm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 0.8125rem;
+}
+
+.incIconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--inc-text-muted);
+    cursor: pointer;
+}
+
+.incIconBtn:hover {
+    background: var(--inc-error-bg);
+    color: var(--inc-error-text);
+}
+
+.incFieldError {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--inc-error-text);
+}
+
+.incForecast {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--inc-border);
+}
+
+.incForecastHead {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.incTagEstimate {
+    padding: 2px 8px;
+    border: 1px solid var(--inc-border-strong);
+    border-radius: 999px;
+    color: var(--inc-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.incCompare {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.incStat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px;
+    background: var(--inc-surface-muted);
+    border-radius: 10px;
+}
+
+.incStatValue {
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.incSrOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+    .incomeRoot {
+        padding: 12px;
+    }
+
+    .incCard {
+        padding: 16px;
+    }
+
+    .incSummary,
+    .incCompare {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .incForm,
+    .incFormCols2,
+    .incFormCols3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .incForm > .incBtn {
+        width: 100%;
+    }
+}

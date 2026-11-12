@@ -139,7 +139,7 @@ export default function DashboardPage() {
                     (isAdmin ? (
                         <AdminRestrictedSection section="Advance Tax" />
                     ) : (
-                        <AdvanceTaxSection />
+                        <AdvanceTaxSection onOpenInvestments={() => setActiveSection("investments")} />
                     ))}
                 {/* Admin-only settings */}
                 {activeSection === "settings" && <SettingsGeneral />}

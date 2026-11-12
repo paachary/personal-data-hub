@@ -1,10 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import styles from "../finance/finance.module.css";
 import taxStyles from "./tax.module.css";
 import { errorMessage, formatAmount, toNumberOrNull } from "./format";
 import ImportDialog from "./ImportDialog";
+import CapitalGainsTab from "./CapitalGainsTab";
+
+const SECTION_TABS = [
+    { id: "fd", label: "FD interest" },
+    { id: "interest", label: "Savings & other interest" },
+    { id: "dividends", label: "Dividends" },
+    { id: "other", label: "Other income" },
+    { id: "capital-gains", label: "Capital gains" },
+];
 
 const INTEREST_KINDS = [
     { value: "interest_savings", label: "Savings account interest" },
@@ -19,7 +27,48 @@ function average(values) {
     return Math.round(values.reduce((sum, v) => sum + v, 0) / values.length);
 }
 
-export default function IncomeTab({ fy }) {
+function SummaryTile({ label, amount, total = false }) {
+    return (
+        <div className={`${taxStyles.incTile} ${total ? taxStyles.incTileTotal : ""}`}>
+            <span className={taxStyles.incMetaLabel}>{label}</span>
+            <span className={taxStyles.incTileValue}>{formatAmount(amount)}</span>
+        </div>
+    );
+}
+
+function IncomeCard({ title, description, accentClass, children }) {
+    return (
+        <section className={`${taxStyles.incCard} ${accentClass}`}>
+            <div className={taxStyles.incCardHeader}>
+                <div>
+                    <h3 className={taxStyles.incCardTitle}>{title}</h3>
+                    <p className={taxStyles.incCardDesc}>{description}</p>
+                </div>
+            </div>
+            <div className={taxStyles.incCardBody}>{children}</div>
+        </section>
+    );
+}
+
+function TrashIcon() {
+    return (
+        <svg className={taxStyles.incIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+        </svg>
+    );
+}
+
+function IconDeleteButton({ label, onClick }) {
+    return (
+        <button type="button" className={taxStyles.incIconBtn} title={label} aria-label={label} onClick={onClick}>
+            <TrashIcon />
+        </button>
+    );
+}
+
+export default function IncomeTab({ fy, onOpenInvestments, exemption112A }) {
+    const [activeSection, setActiveSection] = useState("fd");
     const [state, setState] = useState({ status: "loading", error: "" });
     const [overview, setOverview] = useState(null);
     const [sources, setSources] = useState([]);
@@ -96,17 +145,63 @@ export default function IncomeTab({ fy }) {
         ...(overview?.fdMissingRate || []).map((fd) => ({ ...fd, interest: null, source: null, missing: true })),
     ];
 
-    return (
-        <div>
-            {error && <div className={taxStyles.error}>{error}</div>}
-            {message && <div className={`${taxStyles.banner} ${taxStyles.info}`} role="status">{message}</div>}
+    const fdTotal = fdRows
+        .filter((fd) => !fd.missing)
+        .reduce((sum, fd) => sum + (Number(overrideByInvestment.get(fd.investmentId)?.amount ?? fd.interest) || 0), 0);
+    const interestTotal = interestRows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const dividendTotal = dividends.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const grandTotal = fdTotal + interestTotal + dividendTotal;
 
-            <div className={styles.actions} style={{ margin: "12px 0" }}>
-                <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setImporting(true)}>
+    return (
+        <div className={taxStyles.incomeRoot}>
+            <header className={taxStyles.incHeader}>
+                <div>
+                    <h2 className={taxStyles.incTitle}>Other income</h2>
+                    <p className={taxStyles.incSubtitle}>Interest and dividends for FY {fy}. Amounts in ₹.</p>
+                </div>
+                <button type="button" className={`${taxStyles.incBtn} ${taxStyles.incBtnSecondary}`} onClick={() => setImporting(true)}>
                     Import
                 </button>
+            </header>
+
+            {error && <div className={`${taxStyles.incAlert} ${taxStyles.incAlertError}`} role="alert">{error}</div>}
+            {message && <div className={`${taxStyles.incAlert} ${taxStyles.incAlertInfo}`} role="status">{message}</div>}
+
+            <section className={taxStyles.incSummary} aria-label="FY income summary">
+                <SummaryTile label="FD interest" amount={fdTotal} />
+                <SummaryTile label="Savings and other interest" amount={interestTotal} />
+                <SummaryTile label="Dividends recorded" amount={dividendTotal} />
+                <SummaryTile label="Total for FY" amount={grandTotal} total />
+            </section>
+
+            <div className={taxStyles.incTabs} role="tablist" aria-label="Other income sections">
+                {SECTION_TABS.map((tab) => {
+                    const count = {
+                        fd: fdRows.length,
+                        interest: interestRows.length,
+                        dividends: dividends.length,
+                        other: otherRows.length,
+                    }[tab.id];
+                    const selected = activeSection === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            id={`inc-tab-${tab.id}`}
+                            type="button"
+                            role="tab"
+                            aria-selected={selected}
+                            aria-controls="inc-tabpanel"
+                            className={`${taxStyles.incTab} ${selected ? taxStyles.incTabActive : ""}`}
+                            onClick={() => setActiveSection(tab.id)}
+                        >
+                            {tab.label}
+                            {count !== undefined && count > 0 && <span className={taxStyles.incBadge}>{count}</span>}
+                        </button>
+                    );
+                })}
             </div>
 
+            <div id="inc-tabpanel" role="tabpanel" aria-labelledby={`inc-tab-${activeSection}`}>
             {importing && (
                 <ImportDialog
                     kind="income"
@@ -121,8 +216,10 @@ export default function IncomeTab({ fy }) {
                 />
             )}
 
+            {activeSection === "fd" && (
             <FdSection
                 rows={fdRows}
+                onOpenInvestments={onOpenInvestments}
                 overrideByInvestment={overrideByInvestment}
                 fy={fy}
                 onAddOverride={(fd, amount) =>
@@ -149,9 +246,10 @@ export default function IncomeTab({ fy }) {
                     run(() => window.electronAPI.tax.incomeSources.remove(source.id), "Override removed.");
                 }}
             />
+            )}
 
+            {activeSection === "interest" && (
             <InterestRowsSection
-                title="Savings and other interest"
                 rows={interestRows}
                 onAdd={(form) =>
                     run(
@@ -164,7 +262,9 @@ export default function IncomeTab({ fy }) {
                     run(() => window.electronAPI.tax.incomeSources.remove(row.id), "Interest row deleted.");
                 }}
             />
+            )}
 
+            {activeSection === "dividends" && (
             <DividendSection
                 fy={fy}
                 history={dividends}
@@ -190,7 +290,9 @@ export default function IncomeTab({ fy }) {
                     return run(action, "Dividend forecast saved.");
                 }}
             />
+            )}
 
+            {activeSection === "other" && (
             <OtherIncomeSection
                 rows={otherRows}
                 onAdd={(form) =>
@@ -201,14 +303,20 @@ export default function IncomeTab({ fy }) {
                 }
                 onRemove={(row) => {
                     if (!confirm(`Delete "${row.label || "this income"}"?`)) return;
-                    run(() => window.electronAPI.tax.incomeSources.remove(row.id), "Other income deleted.");
+                run(() => window.electronAPI.tax.incomeSources.remove(row.id), "Other income deleted.");
                 }}
             />
+            )}
+
+            {activeSection === "capital-gains" && (
+                <CapitalGainsTab fy={fy} exemption={exemption112A} />
+            )}
+            </div>
         </div>
     );
 }
 
-function FdSection({ rows, overrideByInvestment, fy, onAddOverride, onUpdateOverride, onRemoveOverride }) {
+function FdSection({ rows, overrideByInvestment, fy, onOpenInvestments, onAddOverride, onUpdateOverride, onRemoveOverride }) {
     const [editing, setEditing] = useState(null);
     const [amount, setAmount] = useState("");
     const [formError, setFormError] = useState("");
@@ -229,19 +337,34 @@ function FdSection({ rows, overrideByInvestment, fy, onAddOverride, onUpdateOver
     };
 
     return (
-        <div className={taxStyles.subsection}>
-            <h3 className={taxStyles.subsectionTitle}>Fixed deposit interest (FY {fy})</h3>
+        <IncomeCard
+            title={`Fixed deposit interest (FY ${fy})`}
+            description="Interest from your active FDs on the Investments page. Override the automatic figure if your bank statement differs."
+            accentClass={taxStyles.accentTeal}
+        >
+            {rows.some((fd) => fd.missing) && (
+                <div className={`${taxStyles.incAlert} ${taxStyles.incAlertWarning}`} role="alert">
+                    <span>
+                        Some FDs have no interest rate, so they are left out of the total.
+                        Add the rate on the Investments page.
+                    </span>
+                </div>
+            )}
+
             {rows.length === 0 ? (
-                <p className={taxStyles.assumptions}>No active FDs found in Investments for this year.</p>
+                <div className={taxStyles.incEmpty}>
+                    <p className={taxStyles.incEmptyTitle}>No active FDs for FY {fy}</p>
+                    <p className={taxStyles.incHint}>FDs added on the Investments page appear here automatically.</p>
+                </div>
             ) : (
-                <div className={styles.tableWrapper}>
-                    <table className={styles.table}>
+                <div className={taxStyles.incTableWrap}>
+                    <table className={taxStyles.incTable}>
                         <thead>
                             <tr>
                                 <th>FD</th>
                                 <th>Source</th>
-                                <th className={taxStyles.numeric}>Interest for FY</th>
-                                <th>Actions</th>
+                                <th className={taxStyles.incNum}>Interest for FY</th>
+                                <th><span className={taxStyles.incSrOnly}>Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -252,28 +375,32 @@ function FdSection({ rows, overrideByInvestment, fy, onAddOverride, onUpdateOver
                                         <td>{fd.name}</td>
                                         <td>
                                             {override ? (
-                                                <span className={`${taxStyles.banner} ${taxStyles.warning}`}>Override</span>
+                                                <span className={`${taxStyles.incStatus} ${taxStyles.incStatusInfo}`}>Override</span>
                                             ) : fd.missing ? (
-                                                <span className={taxStyles.assumptions}>Rate missing: set it on the Investments page</span>
+                                                <span className={`${taxStyles.incStatus} ${taxStyles.incStatusWarn}`}>Rate missing</span>
                                             ) : (
-                                                "Automatic"
+                                                <span className={taxStyles.incMuted}>Automatic</span>
                                             )}
                                         </td>
-                                        <td className={taxStyles.numeric}>
-                                            {formatAmount(override ? override.amount : fd.interest)}
+                                        <td className={taxStyles.incNum}>
+                                            {fd.missing ? "—" : formatAmount(override ? override.amount : fd.interest)}
                                         </td>
-                                        <td>
-                                            {!fd.missing && (
-                                                <button type="button" className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`}
-                                                    onClick={() => startEdit(fd, override)}>
-                                                    {override ? "Edit override" : "Override"}
+                                        <td className={taxStyles.incActions}>
+                                            {fd.missing ? (
+                                                <button type="button" className={`${taxStyles.incBtn} ${taxStyles.incBtnPrimary} ${taxStyles.incBtnSm}`}
+                                                    onClick={onOpenInvestments} disabled={!onOpenInvestments}>
+                                                    Set rate
                                                 </button>
-                                            )}
-                                            {override && (
-                                                <button type="button" className={`${styles.btn} ${styles.btnDanger} ${styles.btnSm}`}
-                                                    onClick={() => onRemoveOverride(override)}>
-                                                    Remove override
-                                                </button>
+                                            ) : (
+                                                <div className={taxStyles.incBtnGroup}>
+                                                    <button type="button" className={`${taxStyles.incBtn} ${taxStyles.incBtnSecondary} ${taxStyles.incBtnSm}`}
+                                                        onClick={() => startEdit(fd, override)}>
+                                                        {override ? "Edit" : "Override"}
+                                                    </button>
+                                                    {override && (
+                                                        <IconDeleteButton label="Remove override" onClick={() => onRemoveOverride(override)} />
+                                                    )}
+                                                </div>
                                             )}
                                         </td>
                                     </tr>
@@ -285,26 +412,28 @@ function FdSection({ rows, overrideByInvestment, fy, onAddOverride, onUpdateOver
             )}
 
             {editing && (
-                <form onSubmit={submit} className={styles.fields} style={{ marginTop: 12 }}>
-                    {formError && <div className={taxStyles.error}>{formError}</div>}
-                    <div className={styles.field}>
-                        <label className={styles.label} htmlFor="fd-override-amount">
-                            Interest for {editing.name} (₹), replaces the automatic figure
+                <form onSubmit={submit} className={taxStyles.incForm} noValidate>
+                    <div className={taxStyles.incField}>
+                        <label className={taxStyles.incLabel} htmlFor="fd-override-amount">
+                            Interest for {editing.name} (₹)
                         </label>
-                        <input id="fd-override-amount" className={styles.input} type="number" min="0" step="1"
-                            value={amount} onChange={(e) => setAmount(e.target.value)} />
+                        <input id="fd-override-amount" className={taxStyles.incInput} type="number" min="0" step="1"
+                            value={amount} onChange={(e) => setAmount(e.target.value)}
+                            aria-invalid={formError ? "true" : undefined}
+                            aria-describedby={formError ? "fd-override-error" : undefined} />
+                        {formError && <span id="fd-override-error" className={taxStyles.incFieldError}>{formError}</span>}
                     </div>
-                    <div className={styles.actions}>
-                        <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Save override</button>
-                        <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setEditing(null)}>Cancel</button>
+                    <div className={taxStyles.incBtnGroup}>
+                        <button type="submit" className={`${taxStyles.incBtn} ${taxStyles.incBtnPrimary}`}>Save override</button>
+                        <button type="button" className={`${taxStyles.incBtn} ${taxStyles.incBtnSecondary}`} onClick={() => setEditing(null)}>Cancel</button>
                     </div>
                 </form>
             )}
-        </div>
+        </IncomeCard>
     );
 }
 
-function InterestRowsSection({ title, rows, onAdd, onRemove }) {
+function InterestRowsSection({ rows, onAdd, onRemove }) {
     const [form, setForm] = useState({ kind: INTEREST_KINDS[0].value, label: "", amount: "" });
     const [formError, setFormError] = useState("");
 
@@ -317,36 +446,54 @@ function InterestRowsSection({ title, rows, onAdd, onRemove }) {
         setForm({ ...form, label: "", amount: "" });
     };
 
+    const total = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
     return (
-        <div className={taxStyles.subsection}>
-            <h3 className={taxStyles.subsectionTitle}>{title}</h3>
-            <SourceTable rows={rows} labelFor={(r) => INTEREST_KINDS.find((k) => k.value === r.kind)?.label} onRemove={onRemove} />
-            <form onSubmit={submit} className={styles.fields} style={{ marginTop: 12 }}>
-                {formError && <div className={taxStyles.error}>{formError}</div>}
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="interest-kind">Type</label>
-                    <select id="interest-kind" className={styles.select} value={form.kind}
+        <IncomeCard
+            title="Savings and other interest"
+            description="Interest from savings accounts and other deposits that is not from an FD."
+            accentClass={taxStyles.accentBlue}
+        >
+            <form onSubmit={submit} className={`${taxStyles.incForm} ${taxStyles.incFormCols3}`} noValidate>
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="interest-kind">Type</label>
+                    <select id="interest-kind" className={taxStyles.incInput} value={form.kind}
                         onChange={(e) => setForm({ ...form, kind: e.target.value })}>
                         {INTEREST_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
                     </select>
                 </div>
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="interest-label">Label</label>
-                    <input id="interest-label" className={styles.input} value={form.label}
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="interest-label">Label</label>
+                    <input id="interest-label" className={taxStyles.incInput} value={form.label} placeholder="e.g. HDFC savings"
                         onChange={(e) => setForm({ ...form, label: e.target.value })} />
                 </div>
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="interest-amount">Amount (₹)</label>
-                    <input id="interest-amount" className={styles.input} type="number" min="0" step="1" value={form.amount}
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="interest-amount">Amount (₹)</label>
+                    <input id="interest-amount" className={taxStyles.incInput} type="number" min="0" step="1" value={form.amount}
+                        placeholder="0"
+                        aria-invalid={formError ? "true" : undefined}
+                        aria-describedby={formError ? "interest-error" : undefined}
                         onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+                    {formError && <span id="interest-error" className={taxStyles.incFieldError}>{formError}</span>}
                 </div>
-                <div className={styles.actions}>
-                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Add interest</button>
+                <div className={taxStyles.incFormAction}>
+                    <button type="submit" className={`${taxStyles.incBtn} ${taxStyles.incBtnPrimary}`}>Add interest</button>
                 </div>
             </form>
-        </div>
+
+            <SourceTable rows={rows} labelFor={(r) => INTEREST_KINDS.find((k) => k.value === r.kind)?.label}
+                emptyTitle="No savings or other interest yet" emptyHint="Add your first entry above."
+                onRemove={onRemove} />
+            {rows.length > 0 && (
+                <div className={taxStyles.incTotal}>
+                    <span>Subtotal</span>
+                    <span className={taxStyles.incNum}>{formatAmount(total)}</span>
+                </div>
+            )}
+        </IncomeCard>
     );
 }
+
 
 function DividendSection({ fy, history, suggestedForecast, forecastRow, onAddHistory, onRemoveHistory, onSaveForecast }) {
     const [form, setForm] = useState({ source_label: "", amount: "" });
@@ -375,84 +522,116 @@ function DividendSection({ fy, history, suggestedForecast, forecastRow, onAddHis
     };
 
     const total = history.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const forecastValue = forecastRow ? Number(forecastRow.amount) || 0 : null;
 
     return (
-        <div className={taxStyles.subsection}>
-            <h3 className={taxStyles.subsectionTitle}>Dividends</h3>
+        <IncomeCard
+            title="Dividends"
+            description="Dividends from shares and mutual funds. Recorded entries are used in the tax calculation."
+            accentClass={taxStyles.accentGreen}
+        >
+            <form onSubmit={submitHistory} className={`${taxStyles.incForm} ${taxStyles.incFormCols2}`} noValidate>
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="div-source">Company or fund</label>
+                    <input id="div-source" className={taxStyles.incInput} value={form.source_label} placeholder="e.g. Infosys"
+                        aria-invalid={formError && !form.source_label.trim() ? "true" : undefined}
+                        onChange={(e) => setForm({ ...form, source_label: e.target.value })} />
+                </div>
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="div-amount">Amount (₹)</label>
+                    <input id="div-amount" className={taxStyles.incInput} type="number" min="0" step="1" value={form.amount}
+                        placeholder="0"
+                        aria-invalid={formError ? "true" : undefined}
+                        aria-describedby={formError ? "div-error" : undefined}
+                        onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+                    {formError && <span id="div-error" className={taxStyles.incFieldError}>{formError}</span>}
+                </div>
+                <div className={taxStyles.incFormAction}>
+                    <button type="submit" className={`${taxStyles.incBtn} ${taxStyles.incBtnPrimary}`}>Add dividend</button>
+                </div>
+            </form>
 
-            <div className={styles.tableWrapper}>
-                <table className={styles.table}>
+            <div className={taxStyles.incTableWrap}>
+                <table className={taxStyles.incTable}>
                     <thead>
                         <tr>
                             <th>Source</th>
-                            <th className={taxStyles.numeric}>Amount</th>
-                            <th>Actions</th>
+                            <th className={taxStyles.incNum}>Amount</th>
+                            <th><span className={taxStyles.incSrOnly}>Actions</span></th>
                         </tr>
                     </thead>
                     <tbody>
                         {history.length === 0 && (
-                            <tr><td colSpan={3}>No dividends recorded for FY {fy}.</td></tr>
+                            <tr>
+                                <td colSpan={3}>
+                                    <div className={taxStyles.incEmpty}>
+                                        <p className={taxStyles.incEmptyTitle}>No dividends recorded for FY {fy}</p>
+                                        <p className={taxStyles.incHint}>Add your first dividend above.</p>
+                                    </div>
+                                </td>
+                            </tr>
                         )}
                         {history.map((row) => (
                             <tr key={row.id}>
                                 <td>{row.source_label}</td>
-                                <td className={taxStyles.numeric}>{formatAmount(row.amount)}</td>
-                                <td>
-                                    <button type="button" className={`${styles.btn} ${styles.btnDanger} ${styles.btnSm}`}
-                                        onClick={() => onRemoveHistory(row)}>Delete</button>
+                                <td className={taxStyles.incNum}>{formatAmount(row.amount)}</td>
+                                <td className={taxStyles.incActions}>
+                                    <IconDeleteButton label={`Delete ${row.source_label}`} onClick={() => onRemoveHistory(row)} />
                                 </td>
                             </tr>
                         ))}
-                        <tr className={taxStyles.totalRow}>
-                            <td>Total recorded</td>
-                            <td className={taxStyles.numeric}>{formatAmount(total)}</td>
-                            <td />
-                        </tr>
                     </tbody>
                 </table>
             </div>
+            {history.length > 0 && (
+                <div className={taxStyles.incTotal}>
+                    <span>Total recorded</span>
+                    <span className={taxStyles.incNum}>{formatAmount(total)}</span>
+                </div>
+            )}
 
-            <form onSubmit={submitHistory} className={styles.fields} style={{ marginTop: 12 }}>
-                {formError && <div className={taxStyles.error}>{formError}</div>}
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="div-source">Company or fund</label>
-                    <input id="div-source" className={styles.input} value={form.source_label}
-                        onChange={(e) => setForm({ ...form, source_label: e.target.value })} />
+            <div className={taxStyles.incForecast}>
+                <div className={taxStyles.incForecastHead}>
+                    <strong>Dividend forecast for FY {fy}</strong>
+                    <span className={taxStyles.incTagEstimate}>Estimate</span>
                 </div>
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="div-amount">Amount (₹)</label>
-                    <input id="div-amount" className={styles.input} type="number" min="0" step="1" value={form.amount}
-                        onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+                <form onSubmit={submitForecast} className={taxStyles.incForm} noValidate>
+                    <div className={taxStyles.incField}>
+                        <label className={taxStyles.incLabel} htmlFor="div-forecast">Estimated amount (₹)</label>
+                        <input id="div-forecast" className={taxStyles.incInput} type="number" min="0" step="1" value={forecast}
+                            aria-invalid={forecastError ? "true" : undefined}
+                            aria-describedby={forecastError ? "forecast-error" : "forecast-hint"}
+                            onChange={(e) => setForecast(e.target.value)} />
+                        {forecastError
+                            ? <span id="forecast-error" className={taxStyles.incFieldError}>{forecastError}</span>
+                            : <span id="forecast-hint" className={taxStyles.incHint}>
+                                {suggestedForecast != null
+                                    ? `Suggested: ${formatAmount(suggestedForecast)}, the average of past years.`
+                                    : "No past years to average. Enter a value."}
+                            </span>}
+                    </div>
+                    <div className={taxStyles.incFormAction}>
+                        <button type="submit" className={`${taxStyles.incBtn} ${taxStyles.incBtnSecondary}`}>
+                            {forecastRow ? "Update forecast" : "Save forecast"}
+                        </button>
+                    </div>
+                </form>
+                <div className={taxStyles.incCompare}>
+                    <div className={taxStyles.incStat}>
+                        <span className={taxStyles.incMetaLabel}>Recorded</span>
+                        <span className={taxStyles.incStatValue}>{formatAmount(total)}</span>
+                    </div>
+                    <div className={taxStyles.incStat}>
+                        <span className={taxStyles.incMetaLabel}>Forecast</span>
+                        <span className={taxStyles.incStatValue}>{forecastValue != null ? formatAmount(forecastValue) : "Not set"}</span>
+                    </div>
                 </div>
-                <div className={styles.actions}>
-                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Add dividend</button>
-                </div>
-            </form>
-
-            <form onSubmit={submitForecast} className={styles.fields} style={{ marginTop: 16 }}>
-                {forecastError && <div className={taxStyles.error}>{forecastError}</div>}
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="div-forecast">
-                        Dividend forecast for FY {fy} (₹)
-                    </label>
-                    <input id="div-forecast" className={styles.input} type="number" min="0" step="1" value={forecast}
-                        onChange={(e) => setForecast(e.target.value)} />
-                    <span className={taxStyles.assumptions}>
-                        {suggestedForecast != null
-                            ? `Suggested: ${formatAmount(suggestedForecast)}, the average of past years.`
-                            : "No past years to average. Enter a value."}
-                    </span>
-                </div>
-                <div className={styles.actions}>
-                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-                        {forecastRow ? "Update forecast" : "Save forecast"}
-                    </button>
-                </div>
-            </form>
-            <p className={taxStyles.assumptions}>
-                The forecast is the amount used in the tax calculation. The recorded list above is for reference only.
-            </p>
-        </div>
+                <p className={taxStyles.incHint}>
+                    The tax calculation uses recorded dividends when any are entered. The forecast is used only when none are
+                    recorded and &ldquo;Forecast dividends&rdquo; is enabled in your tax profile.
+                </p>
+            </div>
+        </IncomeCard>
     );
 }
 
@@ -470,55 +649,76 @@ function OtherIncomeSection({ rows, onAdd, onRemove }) {
         setForm({ label: "", amount: "" });
     };
 
+    const total = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
     return (
-        <div className={taxStyles.subsection}>
-            <h3 className={taxStyles.subsectionTitle}>Other income</h3>
-            <p className={taxStyles.assumptions}>
-                Other income is recorded for reference. It is not included in the tax calculation.
-            </p>
-            <SourceTable rows={rows} labelFor={() => "Other"} onRemove={onRemove} />
-            <form onSubmit={submit} className={styles.fields} style={{ marginTop: 12 }}>
-                {formError && <div className={taxStyles.error}>{formError}</div>}
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="other-label">Description</label>
-                    <input id="other-label" className={styles.input} value={form.label}
+        <IncomeCard
+            title="Other income"
+            description="Recorded for reference only. This is not included in the tax calculation."
+            accentClass={taxStyles.accentSlate}
+        >
+            <form onSubmit={submit} className={`${taxStyles.incForm} ${taxStyles.incFormCols2}`} noValidate>
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="other-label">Description</label>
+                    <input id="other-label" className={taxStyles.incInput} value={form.label} placeholder="e.g. Gift received"
+                        aria-invalid={formError && !form.label.trim() ? "true" : undefined}
                         onChange={(e) => setForm({ ...form, label: e.target.value })} />
                 </div>
-                <div className={styles.field}>
-                    <label className={styles.label} htmlFor="other-amount">Amount (₹)</label>
-                    <input id="other-amount" className={styles.input} type="number" min="0" step="1" value={form.amount}
+                <div className={taxStyles.incField}>
+                    <label className={taxStyles.incLabel} htmlFor="other-amount">Amount (₹)</label>
+                    <input id="other-amount" className={taxStyles.incInput} type="number" min="0" step="1" value={form.amount}
+                        placeholder="0"
+                        aria-invalid={formError ? "true" : undefined}
+                        aria-describedby={formError ? "other-error" : undefined}
                         onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+                    {formError && <span id="other-error" className={taxStyles.incFieldError}>{formError}</span>}
                 </div>
-                <div className={styles.actions}>
-                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Add other income</button>
+                <div className={taxStyles.incFormAction}>
+                    <button type="submit" className={`${taxStyles.incBtn} ${taxStyles.incBtnPrimary}`}>Add other income</button>
                 </div>
             </form>
-        </div>
+
+            <SourceTable rows={rows} labelFor={() => "Other"}
+                emptyTitle="No other income recorded" emptyHint="Add your first entry above."
+                onRemove={onRemove} />
+            {rows.length > 0 && (
+                <div className={taxStyles.incTotal}>
+                    <span>Subtotal</span>
+                    <span className={taxStyles.incNum}>{formatAmount(total)}</span>
+                </div>
+            )}
+        </IncomeCard>
     );
 }
 
-function SourceTable({ rows, labelFor, onRemove }) {
+function SourceTable({ rows, labelFor, emptyTitle, emptyHint, onRemove }) {
+    if (rows.length === 0) {
+        return (
+            <div className={taxStyles.incEmpty}>
+                <p className={taxStyles.incEmptyTitle}>{emptyTitle}</p>
+                <p className={taxStyles.incHint}>{emptyHint}</p>
+            </div>
+        );
+    }
     return (
-        <div className={styles.tableWrapper}>
-            <table className={styles.table}>
+        <div className={taxStyles.incTableWrap}>
+            <table className={taxStyles.incTable}>
                 <thead>
                     <tr>
                         <th>Type</th>
                         <th>Label</th>
-                        <th className={taxStyles.numeric}>Amount</th>
-                        <th>Actions</th>
+                        <th className={taxStyles.incNum}>Amount</th>
+                        <th><span className={taxStyles.incSrOnly}>Actions</span></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.length === 0 && <tr><td colSpan={4}>No entries yet.</td></tr>}
                     {rows.map((row) => (
                         <tr key={row.id}>
                             <td>{labelFor(row)}</td>
                             <td>{row.label || "—"}</td>
-                            <td className={taxStyles.numeric}>{formatAmount(row.amount)}</td>
-                            <td>
-                                <button type="button" className={`${styles.btn} ${styles.btnDanger} ${styles.btnSm}`}
-                                    onClick={() => onRemove(row)}>Delete</button>
+                            <td className={taxStyles.incNum}>{formatAmount(row.amount)}</td>
+                            <td className={taxStyles.incActions}>
+                                <IconDeleteButton label={`Delete ${row.label || labelFor(row)}`} onClick={() => onRemove(row)} />
                             </td>
                         </tr>
                     ))}

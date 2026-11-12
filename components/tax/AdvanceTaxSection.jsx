@@ -6,7 +6,6 @@ import taxStyles from "./tax.module.css";
 import OverviewTab from "./OverviewTab";
 import ProfileTab from "./ProfileTab";
 import IncomeTab from "./IncomeTab";
-import CapitalGainsTab from "./CapitalGainsTab";
 import PaymentsTab from "./PaymentsTab";
 import ReferenceTab from "./ReferenceTab";
 import rules2024 from "@/lib/tax/rules/fy2024-25.json";
@@ -32,7 +31,7 @@ function currentFy(now = new Date()) {
     return `${startYear}-${String((startYear + 1) % 100).padStart(2, "0")}`;
 }
 
-export default function AdvanceTaxSection() {
+export default function AdvanceTaxSection({ onOpenInvestments }) {
     const [yearsWithData, setYearsWithData] = useState([]);
     const [yearsError, setYearsError] = useState("");
     const [fy, setFy] = useState(currentFy());
@@ -108,10 +107,7 @@ export default function AdvanceTaxSection() {
             </div>
 
             {activeTab === "other-income" && (
-                <>
-                    <IncomeTab key={fy} fy={fy} />
-                    <CapitalGainsTab key={fy} fy={fy} exemption={exemption112A} />
-                </>
+                <IncomeTab key={fy} fy={fy} onOpenInvestments={onOpenInvestments} exemption112A={exemption112A} />
             )}
             {activeTab === "tax-liability" && (
                 <>
