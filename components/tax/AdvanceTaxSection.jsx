@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "../finance/finance.module.css";
 import taxStyles from "./tax.module.css";
 import OverviewTab from "./OverviewTab";
-import ProfileTab from "./ProfileTab";
+import TaxPage from "./TaxPage";
 import IncomeTab from "./IncomeTab";
 import PaymentsTab from "./PaymentsTab";
 import ReferenceTab from "./ReferenceTab";
@@ -36,7 +36,6 @@ export default function AdvanceTaxSection({ onOpenInvestments }) {
     const [yearsError, setYearsError] = useState("");
     const [fy, setFy] = useState(currentFy());
     const [activeTab, setActiveTab] = useState("other-income");
-    const [profileVersion, setProfileVersion] = useState(0);
 
     useEffect(() => {
         let active = true;
@@ -109,12 +108,7 @@ export default function AdvanceTaxSection({ onOpenInvestments }) {
             {activeTab === "other-income" && (
                 <IncomeTab key={fy} fy={fy} onOpenInvestments={onOpenInvestments} exemption112A={exemption112A} />
             )}
-            {activeTab === "tax-liability" && (
-                <>
-                    <ProfileTab key={fy} fy={fy} onSaved={() => setProfileVersion((v) => v + 1)} />
-                    <OverviewTab key={`liability-${fy}-${profileVersion}`} fy={fy} view="liability" />
-                </>
-            )}
+            {activeTab === "tax-liability" && <TaxPage key={fy} fy={fy} unverified={unverified} />}
             {activeTab === "advance-tax-schedule" && (
                 <>
                     <OverviewTab key={`schedule-${fy}`} fy={fy} view="schedule" />

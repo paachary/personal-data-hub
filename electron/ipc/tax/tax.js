@@ -39,6 +39,39 @@ function checkObject(value) {
     return value;
 }
 
+const DRAFT_AGE_BANDS = ["below60", "senior", "superSenior"];
+const DRAFT_REGIMES = ["compare", "old", "new"];
+const DRAFT_AMOUNT_KEYS = [
+    "salary", "house_property", "business_income", "tds_tcs",
+    "ded_80c", "ded_80d", "ded_80ccd1b", "ded_hra", "ded_24b", "ded_other",
+];
+const DRAFT_BOOLEAN_KEYS = ["has_business_income", "presumptive_44ad", "use_dividend_forecast"];
+const MAX_DRAFT_AMOUNT = 1e12;
+
+// Validates an unsaved profile sent with tax:getOverview. Returns null when absent. Never persisted.
+function sanitizeDraft(draft) {
+    if (draft == null) return null;
+    checkObject(draft);
+    if (!DRAFT_AGE_BANDS.includes(draft.age_band)) throw new TypeError("Invalid age band.");
+    if (!DRAFT_REGIMES.includes(draft.regime_choice)) throw new TypeError("Invalid regime.");
+    const out = { age_band: draft.age_band, regime_choice: draft.regime_choice };
+    for (const key of DRAFT_BOOLEAN_KEYS) {
+        if (typeof draft[key] !== "boolean") throw new TypeError("Invalid draft flag.");
+        out[key] = draft[key];
+    }
+    for (const key of DRAFT_AMOUNT_KEYS) {
+        const value = draft[key];
+        if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > MAX_DRAFT_AMOUNT) {
+            throw new TypeError("Invalid draft amount.");
+        }
+        out[key] = value;
+    }
+    const months = draft.filing_months_delay;
+    if (!Number.isInteger(months) || months < 0 || months > 12) throw new TypeError("Invalid filing delay.");
+    out.filing_months_delay = months;
+    return out;
+}
+
 // Splits `{ fy, ...data }` from the renderer and validates the financial year.
 function splitFy(payload) {
     const { fy, ...data } = checkObject(payload);
@@ -108,10 +141,10 @@ function registerTaxHandlers() {
         return service.listFinancialYears(getFinanceDb(), userId);
     });
 
-    ipcMain.handle("tax:getOverview", (event, fy) => {
+    ipcMain.handle("tax:getOverview", (event, fy, draft) => {
         const userId = requireRegularUser();
         checkFy(fy);
-        return service.getOverview(getFinanceDb(), userId, fy);
+        return service.getOverview(getFinanceDb(), userId, fy, sanitizeDraft(draft));
     });
 
     ipcMain.handle("tax:profile:get", (event, fy) => {
