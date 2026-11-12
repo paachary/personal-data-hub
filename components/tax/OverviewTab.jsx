@@ -51,7 +51,7 @@ function isEmptyOverview(data) {
     return !data.profileSaved && !hasIncome && data.payments.length === 0 && data.capitalGains.length === 0;
 }
 
-export default function OverviewTab({ fy }) {
+export default function OverviewTab({ fy, view = "liability" }) {
     const [state, setState] = useState({ status: "loading", data: null, error: null });
     const [exportMessage, setExportMessage] = useState("");
     const [exporting, setExporting] = useState(false);
@@ -124,6 +124,7 @@ export default function OverviewTab({ fy }) {
                     onClick={() => runExport("word")}>Export Word</button>
                 {exportMessage && <span style={{ marginLeft: 12 }}>{exportMessage}</span>}
             </div>
+            {view === "liability" && (<>
             <div className={styles.summaryGrid}>
                 <div className={styles.summaryCard}>
                     <div className={styles.summaryLabel}>Recommended regime</div>
@@ -178,8 +179,63 @@ export default function OverviewTab({ fy }) {
                 </div>
             </div>
 
-            {schedule.applicable ? (
-                <>
+            {chosen?.slabBreakdown?.length > 0 && (
+                <div className={taxStyles.subsection}>
+                    <h3 className={taxStyles.subsectionTitle}>
+                        Slab-wise tax ({chosen.regime === "old" ? "old" : "new"} regime, normal income)
+                    </h3>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Slab</th>
+                                    <th className={taxStyles.numeric}>From</th>
+                                    <th className={taxStyles.numeric}>Up to</th>
+                                    <th className={taxStyles.numeric}>Rate</th>
+                                    <th className={taxStyles.numeric}>Taxable in slab</th>
+                                    <th className={taxStyles.numeric}>Tax</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {chosen.slabBreakdown.map((s, index) => (
+                                    <tr key={s.from}>
+                                        <td>{index + 1}</td>
+                                        <td className={taxStyles.numeric}>{formatAmount(s.from)}</td>
+                                        <td className={taxStyles.numeric}>{s.to === null ? "Above" : formatAmount(s.to)}</td>
+                                        <td className={taxStyles.numeric}>{Math.round(s.rate * 100)}%</td>
+                                        <td className={taxStyles.numeric}>{formatAmount(s.taxableInSlab)}</td>
+                                        <td className={taxStyles.numeric}>{formatAmount(s.taxInSlab)}</td>
+                                    </tr>
+                                ))}
+                                <tr className={taxStyles.totalRow}>
+                                    <td>Total</td>
+                                    <td />
+                                    <td />
+                                    <td />
+                                    <td className={taxStyles.numeric}>{formatAmount(chosen.taxableIncome?.normal)}</td>
+                                    <td className={taxStyles.numeric}>{formatAmount(chosen.slabTax)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {data.dividendForecast && (
+                <div className={`${taxStyles.banner} ${taxStyles.info}`}>
+                    Dividend income of {formatAmount(data.dividendForecast.amount)} is forecast from{" "}
+                    {data.dividendForecast.basis.map((b) => `FY ${b.fy} (${formatAmount(b.amount)})`).join(" and ")}.
+                    Recorded dividends for FY {fy} override this forecast.
+                </div>
+            )}
+            </>)}
+
+            {view === "schedule" && (<>
+            {!schedule.applicable && (
+                <div className={`${taxStyles.banner} ${taxStyles.info}`}>
+                    {schedule.reason}
+                </div>
+            )}
                     <div className={taxStyles.subsection}>
                         <h3 className={taxStyles.subsectionTitle}>Advance tax instalments</h3>
                         <div className={styles.tableWrapper}>
@@ -230,7 +286,7 @@ export default function OverviewTab({ fy }) {
                         )}
                     </div>
 
-                    <div className={taxStyles.subsection}>
+                    {schedule.applicable && <div className={taxStyles.subsection}>
                         <h3 className={taxStyles.subsectionTitle}>Required vs paid</h3>
                         <div className={taxStyles.chartBox}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -245,13 +301,8 @@ export default function OverviewTab({ fy }) {
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
-                </>
-            ) : (
-                <div className={`${taxStyles.banner} ${taxStyles.info}`}>
-                    {schedule.reason}
-                </div>
-            )}
+                    </div>}
+            </>)}
 
             {data.profile?.presumptive_44ad ? (
                 <div className={`${taxStyles.banner} ${taxStyles.info}`}>

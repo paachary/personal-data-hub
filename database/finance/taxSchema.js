@@ -20,9 +20,16 @@ CREATE TABLE IF NOT EXISTS tax_profile (
     salary               REAL NOT NULL DEFAULT 0,
     house_property       REAL NOT NULL DEFAULT 0,
     business_income      REAL NOT NULL DEFAULT 0,
-    deductions_json      TEXT,
+    ded_80c              REAL NOT NULL DEFAULT 0,
+    ded_80d              REAL NOT NULL DEFAULT 0,
+    ded_80ccd1b          REAL NOT NULL DEFAULT 0,
+    ded_hra              REAL NOT NULL DEFAULT 0,
+    ded_24b              REAL NOT NULL DEFAULT 0,
+    ded_other            REAL NOT NULL DEFAULT 0,
+    use_dividend_forecast INTEGER NOT NULL DEFAULT 0,
     tds_tcs              REAL NOT NULL DEFAULT 0,
-    filing_months_delay  INTEGER NOT NULL DEFAULT 4,
+    filing_months_delay  INTEGER NOT NULL DEFAULT 1,
+    reminders_enabled    INTEGER NOT NULL DEFAULT 0,
     notes                TEXT,
     created_at           TEXT DEFAULT (datetime('now')),
     updated_at           TEXT DEFAULT (datetime('now')),
@@ -100,8 +107,15 @@ const INVESTMENT_COLUMNS = [
     },
 ];
 
-const TAX_PROFILE_COLUMNS = [
-    { name: "reminders_enabled", definition: "INTEGER NOT NULL DEFAULT 0" },
+const LEGACY_PROFILE_TABLE = "tax_profile_legacy";
+
+// Deduction keys used by the pre-v2 deductions_json blob.
+const LEGACY_DEDUCTION_COLUMNS = [
+    { json: "c80C", column: "ded_80c" },
+    { json: "c80D", column: "ded_80d" },
+    { json: "c80CCD1B", column: "ded_80ccd1b" },
+    { json: "hra", column: "ded_hra" },
+    { json: "other", column: "ded_other" },
 ];
 
 function existingColumns(db, table) {
@@ -117,11 +131,52 @@ function addMissingColumns(db, table, columns) {
     }
 }
 
+// Moves the legacy tax_profile (deductions_json blob) to the v2 layout.
+// Renames the old table first: its index shares the v2 index name, so it is dropped here.
+// The copy happens after TAX_TABLES_SQL creates the new table; the legacy table is then removed.
+function renameLegacyProfile(db) {
+    if (!existingColumns(db, "tax_profile").has("deductions_json")) {
+        return false;
+    }
+    db.exec("DROP INDEX IF EXISTS idx_tax_profile_user_fy");
+    db.exec(`ALTER TABLE tax_profile RENAME TO ${LEGACY_PROFILE_TABLE}`);
+    return true;
+}
+
+function copyLegacyProfile(db) {
+    const legacy = existingColumns(db, LEGACY_PROFILE_TABLE);
+    const reminders = legacy.has("reminders_enabled") ? "COALESCE(reminders_enabled, 0)" : "0";
+    const deductionSelects = LEGACY_DEDUCTION_COLUMNS.map(
+        ({ json }) =>
+            `CASE WHEN json_valid(deductions_json) THEN COALESCE(CAST(json_extract(deductions_json, '$.${json}') AS REAL), 0) ELSE 0 END`
+    );
+    const targets = [
+        "id", "user_id", "fy", "age_band", "regime_choice", "has_business_income",
+        "presumptive_44ad", "salary", "house_property", "business_income",
+        ...LEGACY_DEDUCTION_COLUMNS.map((d) => d.column),
+        "tds_tcs", "filing_months_delay", "reminders_enabled", "notes", "created_at", "updated_at",
+    ];
+    const sources = [
+        "id", "user_id", "fy", "age_band", "regime_choice", "has_business_income",
+        "presumptive_44ad", "salary", "house_property", "business_income",
+        ...deductionSelects,
+        "tds_tcs", "filing_months_delay", reminders, "notes", "created_at", "updated_at",
+    ];
+    db.exec(`
+        INSERT INTO tax_profile (${targets.join(", ")})
+        SELECT ${sources.join(", ")} FROM ${LEGACY_PROFILE_TABLE}
+    `);
+    db.exec(`DROP TABLE ${LEGACY_PROFILE_TABLE}`);
+}
+
 function applyTaxSchema(db) {
     db.transaction(() => {
+        const migrateProfile = renameLegacyProfile(db);
         db.exec(TAX_TABLES_SQL);
         addMissingColumns(db, "investments", INVESTMENT_COLUMNS);
-        addMissingColumns(db, "tax_profile", TAX_PROFILE_COLUMNS);
+        if (migrateProfile) {
+            copyLegacyProfile(db);
+        }
     })();
 }
 

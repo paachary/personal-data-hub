@@ -18,11 +18,12 @@ const REGIME_OPTIONS = [
 ];
 
 const DEDUCTION_FIELDS = [
-    ["c80C", "80C (max 1,50,000)"],
-    ["c80D", "80D medical insurance"],
-    ["c80CCD1B", "80CCD(1B) NPS (max 50,000)"],
-    ["hra", "HRA"],
-    ["other", "Other Chapter VI-A deductions"],
+    ["ded_80c", "80C (max 1,50,000, old regime)"],
+    ["ded_80d", "80D medical insurance (old regime)"],
+    ["ded_80ccd1b", "80CCD(1B) NPS (max 50,000, old regime)"],
+    ["ded_hra", "HRA exemption (old regime)"],
+    ["ded_24b", "Home loan interest, Section 24(b) (max 2,00,000, old regime)"],
+    ["ded_other", "Other Chapter VI-A deductions (old regime)"],
 ];
 
 const NUMBER_FIELDS = [
@@ -39,38 +40,33 @@ function emptyForm() {
         has_business_income: false,
         presumptive_44ad: false,
         reminders_enabled: false,
+        use_dividend_forecast: false,
         salary: "",
         house_property: "",
         business_income: "",
         tds_tcs: "",
-        filing_months_delay: "4",
-        notes: "",
+        filing_months_delay: "1",
         deductions: Object.fromEntries(DEDUCTION_FIELDS.map(([key]) => [key, ""])),
     };
 }
 
 function fromSaved(profile) {
     if (!profile) return emptyForm();
-    let deductions = {};
-    try {
-        deductions = profile.deductions_json ? JSON.parse(profile.deductions_json) : {};
-    } catch {
-        deductions = {};
-    }
     return {
         age_band: profile.age_band,
         regime_choice: profile.regime_choice,
         has_business_income: Boolean(profile.has_business_income),
         presumptive_44ad: Boolean(profile.presumptive_44ad),
         reminders_enabled: Boolean(profile.reminders_enabled),
+        use_dividend_forecast: Boolean(profile.use_dividend_forecast),
         salary: String(profile.salary ?? ""),
         house_property: String(profile.house_property ?? ""),
         business_income: String(profile.business_income ?? ""),
         tds_tcs: String(profile.tds_tcs ?? ""),
-        filing_months_delay: String(profile.filing_months_delay ?? "4"),
+        filing_months_delay: String(profile.filing_months_delay ?? "1"),
         notes: profile.notes || "",
         deductions: Object.fromEntries(
-            DEDUCTION_FIELDS.map(([key]) => [key, deductions[key] != null ? String(deductions[key]) : ""]),
+            DEDUCTION_FIELDS.map(([key]) => [key, profile[key] != null ? String(profile[key]) : ""]),
         ),
     };
 }
@@ -141,12 +137,13 @@ export default function ProfileTab({ fy, onSaved }) {
                 has_business_income: form.has_business_income,
                 presumptive_44ad: form.presumptive_44ad,
                 reminders_enabled: form.reminders_enabled,
+                use_dividend_forecast: form.use_dividend_forecast,
                 salary: numbers.salary,
                 house_property: numbers.house_property,
                 business_income: numbers.business_income,
                 tds_tcs: numbers.tds_tcs,
                 filing_months_delay: months,
-                deductions_json: JSON.stringify(deductions),
+                ...deductions,
                 notes: form.notes.trim() || null,
             });
             setMessage("Tax profile saved.");
@@ -191,6 +188,11 @@ export default function ProfileTab({ fy, onSaved }) {
                 </label>
 
                 <label className={styles.label}>
+                    <input type="checkbox" checked={form.use_dividend_forecast}
+                        onChange={(e) => set("use_dividend_forecast", e.target.checked)} /> Forecast dividends from the average of the last two years when none are recorded
+                </label>
+
+                <label className={styles.label}>
                     <input type="checkbox" checked={form.reminders_enabled}
                         onChange={(e) => set("reminders_enabled", e.target.checked)} /> Create reminders for advance tax due dates
                 </label>
@@ -226,7 +228,7 @@ export default function ProfileTab({ fy, onSaved }) {
                     ))}
                 </div>
                 <p className={taxStyles.assumptions}>
-                    Deductions are used as entered; 80C and 80CCD(1B) are capped at the statutory limits. The new regime ignores these deductions.
+                    Deductions are used as entered. 80C, 80CCD(1B) and Section 24(b) are capped at the statutory limits. Deductions apply to the old regime only; the new regime ignores them.
                 </p>
             </div>
 

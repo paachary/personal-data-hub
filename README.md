@@ -389,10 +389,11 @@ Supported bank layouts: HDFC, ICICI, SBI, Union Bank of India and Standard Chart
 
 Available on the **Advance Tax** page for regular users. The sysadmin cannot access it.
 
-1. Enter your tax profile for the financial year (FY) on the **Profile** tab.
-2. Record income, capital gains and advance tax payments. The **Overview** tab shows the computed tax, the recommended regime and the instalment schedule with shortfalls.
-3. Turn on **Create reminders for advance tax due dates** in **Profile** to add a to-do for each instalment with an outstanding amount, set 7 days before its due date.
-4. Use **Export Excel** or **Export Word** on the **Overview** tab to save a summary.
+1. Enter your income on the **Other Income** tab (salary, house property, business, capital gains, and advance tax payments on the **Advance Tax Schedule** tab).
+2. Set your profile, deductions and regime choice on the **Tax Liability** tab. It shows the computed tax and the old vs new regime comparison.
+3. The **Advance Tax Schedule** tab shows the instalment due dates with shortfalls and estimated 234B and 234C interest. Use the **Reference** tab to see the rules used for the selected FY.
+4. Turn on **Create reminders for advance tax due dates** on the **Tax Liability** tab to add a to-do for each instalment with an outstanding amount, set 7 days before its due date.
+5. Use **Export Excel** or **Export Word** on the **Tax Liability** or **Advance Tax Schedule** tab to save a summary.
 
 > **Plaintext warning.** Exported Excel and Word files are not encrypted. Reminders are stored as normal to-dos in the unencrypted master database and are visible to any local user. The app asks you to confirm before each export.
 

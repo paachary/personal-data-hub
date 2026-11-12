@@ -8,13 +8,18 @@ Estimate your advance tax for a financial year (FY), compare the old and new reg
 
 ## Features
 
--   **Profile**: enter your tax details for the FY, including the regime choice.
--   **Overview**: see your computed tax, the recommended regime, and the instalment schedule with required, paid and shortfall amounts.
--   **Income, capital gains and payments**: record the income sources, capital gains and advance tax payments that feed the calculation.
+-   **Other Income**: record salary, house property, business income, other income sources and capital gains for the FY. These feed the calculation.
+-   **Tax Liability**: set your profile (age band, regime choice, deductions, TDS, reminders and dividend forecast), then see the computed tax, the slab-wise tax for the recommended regime and the old vs new regime comparison.
+-   **Advance Tax Schedule**: see the instalment due dates with required, paid and shortfall amounts, the estimated 234B and 234C interest, and record advance tax payments. The instalment table is always shown. When no advance tax is due, the reason appears above it and amounts are zero.
+-   **Reference**: the slabs, rebate, surcharge, cess, capital gains rates, instalment dates and interest rules used for the selected FY.
+-   **Deductions**: 80C, 80CCD(1B) and Section 24(b) home loan interest are capped at their statutory limits (24(b) at 2,00,000 for a self-occupied property). Deductions apply to the old regime only.
+-   **Dividend forecast**: when you turn on the option in **Tax Liability** and no dividends are recorded for the FY, the average of the last two FYs is used as the estimate. Forecast dividends are not part of the instalment schedule.
 -   **Export Excel**: save the overview, instalments, income, capital gains and payments to an `.xlsx` file.
 -   **Export Word**: save a summary of the overview to a `.docx` file.
--   **Due date reminders**: turn on the option in **Profile** to create a to-do for each instalment that still has a shortfall. The reminder is set 7 days before the due date.
+-   **Due date reminders**: turn on the option in **Tax Liability** to create a to-do for each instalment that still has a shortfall. The reminder is set 7 days before the due date.
 -   **Dashboard card**: shows the next pending instalment for the current FY.
+
+> The tax profile was redesigned in this version. Profiles saved in an earlier version are converted automatically the first time the app opens. Your deduction amounts are kept.
 
 ## Important: Plaintext Data
 

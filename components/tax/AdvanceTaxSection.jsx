@@ -8,6 +8,7 @@ import ProfileTab from "./ProfileTab";
 import IncomeTab from "./IncomeTab";
 import CapitalGainsTab from "./CapitalGainsTab";
 import PaymentsTab from "./PaymentsTab";
+import ReferenceTab from "./ReferenceTab";
 import rules2024 from "@/lib/tax/rules/fy2024-25.json";
 import rules2025 from "@/lib/tax/rules/fy2025-26.json";
 import rules2026 from "@/lib/tax/rules/fy2026-27.json";
@@ -19,11 +20,10 @@ const RULES_BY_FY = {
 };
 
 const TABS = [
-    { id: "overview", label: "Overview" },
-    { id: "income", label: "Income" },
-    { id: "capital-gains", label: "Capital Gains" },
-    { id: "payments", label: "Payments" },
-    { id: "profile", label: "Profile" },
+    { id: "other-income", label: "Other Income" },
+    { id: "tax-liability", label: "Tax Liability" },
+    { id: "advance-tax-schedule", label: "Advance Tax Schedule" },
+    { id: "reference", label: "Reference" },
 ];
 
 // Indian FY runs 1 April to 31 March, so April onwards belongs to the FY starting this year.
@@ -36,7 +36,8 @@ export default function AdvanceTaxSection() {
     const [yearsWithData, setYearsWithData] = useState([]);
     const [yearsError, setYearsError] = useState("");
     const [fy, setFy] = useState(currentFy());
-    const [activeTab, setActiveTab] = useState("overview");
+    const [activeTab, setActiveTab] = useState("other-income");
+    const [profileVersion, setProfileVersion] = useState(0);
 
     useEffect(() => {
         let active = true;
@@ -106,13 +107,25 @@ export default function AdvanceTaxSection() {
                 ))}
             </div>
 
-            {activeTab === "overview" && <OverviewTab key={fy} fy={fy} />}
-            {activeTab === "income" && <IncomeTab key={fy} fy={fy} />}
-            {activeTab === "capital-gains" && (
-                <CapitalGainsTab key={fy} fy={fy} exemption={exemption112A} />
+            {activeTab === "other-income" && (
+                <>
+                    <IncomeTab key={fy} fy={fy} />
+                    <CapitalGainsTab key={fy} fy={fy} exemption={exemption112A} />
+                </>
             )}
-            {activeTab === "payments" && <PaymentsTab key={fy} fy={fy} />}
-            {activeTab === "profile" && <ProfileTab key={fy} fy={fy} />}
+            {activeTab === "tax-liability" && (
+                <>
+                    <ProfileTab key={fy} fy={fy} onSaved={() => setProfileVersion((v) => v + 1)} />
+                    <OverviewTab key={`liability-${fy}-${profileVersion}`} fy={fy} view="liability" />
+                </>
+            )}
+            {activeTab === "advance-tax-schedule" && (
+                <>
+                    <OverviewTab key={`schedule-${fy}`} fy={fy} view="schedule" />
+                    <PaymentsTab key={fy} fy={fy} />
+                </>
+            )}
+            {activeTab === "reference" && <ReferenceTab rules={RULES_BY_FY[fy] ?? null} />}
         </section>
     );
 }
