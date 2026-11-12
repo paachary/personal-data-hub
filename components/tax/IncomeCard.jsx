@@ -23,7 +23,10 @@ export default function IncomeCard({ form, set, otherIncome }) {
             ))}
             <div className={styles.field}>
                 <span className={styles.label}>Other income (auto)</span>
-                <div className={styles.readonlyValue}>{formatAmount(otherIncome)}</div>
+                <div className={styles.readonlyValue}>
+                    <span>{formatAmount(otherIncome)}</span>
+                    <span className={styles.autoChip}>Auto</span>
+                </div>
                 <div className={styles.helper}>Interest and dividends, from Other Income</div>
             </div>
             <div className={styles.field}>

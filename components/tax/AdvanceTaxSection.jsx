@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "../finance/finance.module.css";
 import taxStyles from "./tax.module.css";
 import OverviewTab from "./OverviewTab";
 import TaxPage from "./TaxPage";
@@ -59,14 +58,14 @@ export default function AdvanceTaxSection({ onOpenInvestments }) {
     const exemption112A = periods[periods.length - 1]?.ltcg112AExemption?.value ?? null;
 
     return (
-        <section className={`${styles.section} ${taxStyles.taxSection}`}>
+        <section className={taxStyles.taxSection}>
             <div className={taxStyles.fyRow}>
                 <label className={taxStyles.fyLabel} htmlFor="tax-fy">
                     Financial year
                 </label>
                 <select
                     id="tax-fy"
-                    className={styles.select}
+                    className={taxStyles.fySelect}
                     value={fy}
                     onChange={(e) => setFy(e.target.value)}
                 >
@@ -90,20 +89,25 @@ export default function AdvanceTaxSection({ onOpenInvestments }) {
                 </div>
             )}
 
-            <div className={styles.tabs} role="tablist">
+            <div className={taxStyles.outerTabs} role="tablist" aria-label="Advance tax sections">
                 {TABS.map((tab) => (
                     <button
                         key={tab.id}
                         type="button"
                         role="tab"
+                        id={`tax-outer-tab-${tab.id}`}
                         aria-selected={activeTab === tab.id}
-                        className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ""}`}
+                        aria-controls="tax-outer-panel"
+                        tabIndex={activeTab === tab.id ? 0 : -1}
+                        className={taxStyles.outerTab}
                         onClick={() => setActiveTab(tab.id)}
                     >
                         {tab.label}
                     </button>
                 ))}
             </div>
+
+            <div role="tabpanel" id="tax-outer-panel" aria-labelledby={`tax-outer-tab-${activeTab}`} className={taxStyles.outerPanel}>
 
             {activeTab === "other-income" && (
                 <IncomeTab key={fy} fy={fy} onOpenInvestments={onOpenInvestments} exemption112A={exemption112A} />
@@ -116,6 +120,7 @@ export default function AdvanceTaxSection({ onOpenInvestments }) {
                 </>
             )}
             {activeTab === "reference" && <ReferenceTab rules={RULES_BY_FY[fy] ?? null} />}
+            </div>
         </section>
     );
 }

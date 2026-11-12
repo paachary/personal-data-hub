@@ -13,17 +13,17 @@ const DEDUCTION_FIELDS = [
     ["ded_other", "Other Chapter VI-A"],
 ];
 
-export default function DeductionsCard({ form, set }) {
+export default function DeductionsCard({ form, set, dimmed = false }) {
     return (
         <>
-            <div className={`${styles.sectionLabel} ${styles.spanAll}`}>
+            <div className={`${styles.sectionLabel} ${styles.spanAll} ${dimmed ? styles.dimmed : ""}`}>
                 Deductions <span className={styles.badge}>Old regime only</span>
             </div>
             {DEDUCTION_FIELDS.map(([key, label]) => (
                 <DeductionField key={key} fieldKey={key} id={`tax-ded-${key}`} label={label}
-                    value={form[key]} onChange={(v) => set(key, v)} />
+                    value={form[key]} onChange={(v) => set(key, v)} dimmed={dimmed} />
             ))}
-            <div className={`${styles.footerTotal} ${styles.spanAll}`}>
+            <div className={`${styles.footerTotal} ${styles.spanAll} ${dimmed ? styles.dimmed : ""}`}>
                 <span>Total deductions counted</span>
                 <span className={styles.num}>₹{formatIndian(countedDeductions(form))}</span>
             </div>

@@ -7,44 +7,108 @@
 }
 
 .disclaimer {
-    background: #eef4ff;
-    border-color: #b9d0f5;
-    color: #1d3f75;
+    background: var(--bg-surface-2);
+    border-color: var(--border);
+    color: var(--text-secondary);
 }
 
 .warning {
-    background: #fff7e6;
-    border-color: #f5c77a;
-    color: #7a4b00;
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+    color: var(--warning-text);
 }
 
 .info {
-    background: #f4f4f6;
-    border-color: #d8d8de;
-    color: #333;
+    background: var(--bg-surface-2);
+    border-color: var(--border);
+    color: var(--text-secondary);
 }
 
-/* The finance section background is light grey, so the shared finance text colours are too pale here. */
 .taxSection {
-    color: #111827;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 100%;
+    padding: 24px max(24px, calc((100% - 1100px) / 2));
+    color: var(--text-primary);
 }
 
-.taxSection label {
-    color: #111827;
+.outerTabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
 }
 
-.taxSection [role="tab"][aria-selected="false"] {
-    color: #1f2937;
-    border-color: #6b7280;
+.outerPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-.taxSection [role="tab"][aria-selected="false"]:hover {
-    color: #1e3a8a;
-    border-color: #1e40af;
+.outerTab {
+    position: relative;
+    height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--transition);
+}
+
+.outerTab:hover {
+    color: var(--text-primary);
+}
+
+.outerTab[aria-selected="true"] {
+    color: var(--accent-text);
+    font-weight: 600;
+}
+
+.outerTab[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--accent);
+}
+
+.outerTab:focus-visible,
+.fySelect:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.fySelect {
+    height: 40px;
+    min-width: 160px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    font: inherit;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.fySelect:hover {
+    border-color: var(--border-strong);
+}
+
+.fySelect:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .error {
-    color: #b91c1c;
+    color: var(--danger);
     font-size: 0.82rem;
     margin: 0;
 }
@@ -52,19 +116,20 @@
 .empty {
     text-align: center;
     padding: 3rem 1rem;
-    color: #1f2937;
+    color: var(--text-secondary);
 }
 
 .fyRow {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: 12px;
 }
 
 .fyLabel {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .assumptions {
@@ -98,38 +163,88 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* Tax palette, scoped to the advance tax section so it does not depend on the app-wide theme. */
+.taxSection,
+.incomeRoot {
+    --bg-app: #f5f7fa;
+    --bg-surface: #ffffff;
+    --bg-surface-2: #f1f4f8;
+    --border: #e2e6ee;
+    --border-strong: #7b8496;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --accent: #2563eb;
+    --accent-text: #1d4ed8;
+    --accent-solid: #1d4ed8;
+    --accent-contrast: #ffffff;
+    --accent-soft: #eff6ff;
+    --danger: #b91c1c;
+    --success: #15803d;
+    --warning-bg: #fffbeb;
+    --warning-border: #d97706;
+    --warning-text: #92400e;
+    --focus-ring: rgba(37, 99, 235, 0.25);
+    --transition: 140ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+    .taxSection,
+    .incomeRoot {
+        --bg-app: #0f141e;
+        --bg-surface: #161c29;
+        --bg-surface-2: #1d2433;
+        --border: #2c3446;
+        --border-strong: #7d8699;
+        --text-primary: #f1f5f9;
+        --text-secondary: #b4bccb;
+        --text-muted: #8b94a7;
+        --accent: #60a5fa;
+        --accent-text: #93c5fd;
+        --accent-solid: #2563eb;
+        --accent-contrast: #ffffff;
+        --accent-soft: #13223d;
+        --danger: #fca5a5;
+        --success: #86efac;
+        --warning-bg: #2a200e;
+        --warning-border: #b45309;
+        --warning-text: #fcd34d;
+        --focus-ring: rgba(96, 165, 250, 0.3);
+    }
+}
+
 /* ── Other income (IncomeTab) ───────────────────────────
    Self-contained tokens: the panel sets its own surface and text colours,
    so it reads the same regardless of the finance palette around it. */
 .incomeRoot {
-    --inc-page: #f5f7fa;
-    --inc-surface: #ffffff;
-    --inc-surface-muted: #f1f4f8;
-    --inc-border: #e2e6ee;
-    --inc-border-strong: #7b8496;
-    --inc-text: #111827;
-    --inc-text-muted: #4b5563;
-    --inc-row-hover: #f8fafc;
-    --inc-focus: #2563eb;
-    --inc-primary: #1d4ed8;
-    --inc-primary-text: #ffffff;
-    --inc-badge-bg: #92400e;
-    --inc-badge-text: #ffffff;
-    --inc-warn-text: #92400e;
-    --inc-warn-bg: #fffbeb;
-    --inc-warn-border: #d97706;
-    --inc-error-text: #b91c1c;
-    --inc-error-bg: #fef2f2;
-    --inc-info-text: #1e3a8a;
-    --inc-info-bg: #eff6ff;
-    --inc-teal: #0f766e;
-    --inc-teal-soft: #f0fdfa;
-    --inc-blue: #1d4ed8;
-    --inc-blue-soft: #eff6ff;
-    --inc-green: #15803d;
-    --inc-green-soft: #f0fdf4;
-    --inc-slate: #475569;
-    --inc-slate-soft: #f1f5f9;
+    --inc-page: var(--bg-app);
+    --inc-surface: var(--bg-surface);
+    --inc-surface-muted: var(--bg-surface-2);
+    --inc-border: var(--border);
+    --inc-border-strong: var(--border-strong);
+    --inc-text: var(--text-primary);
+    --inc-text-muted: var(--text-secondary);
+    --inc-row-hover: var(--bg-surface-2);
+    --inc-focus: var(--accent);
+    --inc-primary: var(--accent-solid);
+    --inc-primary-text: var(--accent-contrast);
+    --inc-badge-bg: var(--warning-bg);
+    --inc-badge-text: var(--warning-text);
+    --inc-warn-text: var(--warning-text);
+    --inc-warn-bg: var(--warning-bg);
+    --inc-warn-border: var(--warning-border);
+    --inc-error-text: var(--danger);
+    --inc-error-bg: rgba(255, 107, 107, 0.12);
+    --inc-info-text: var(--accent-text);
+    --inc-info-bg: var(--accent-soft);
+    --inc-teal: #5eead4;
+    --inc-teal-soft: rgba(94, 234, 212, 0.12);
+    --inc-blue: var(--accent-text);
+    --inc-blue-soft: var(--accent-soft);
+    --inc-green: var(--success);
+    --inc-green-soft: rgba(61, 214, 140, 0.12);
+    --inc-slate: var(--text-secondary);
+    --inc-slate-soft: var(--bg-surface-2);
 
     background: var(--inc-page);
     color: var(--inc-text);
@@ -137,39 +252,6 @@
     border-radius: 12px;
     font-size: 0.9375rem;
     line-height: 1.5;
-}
-
-@media (prefers-color-scheme: dark) {
-    .incomeRoot {
-        --inc-page: #0f141e;
-        --inc-surface: #161c29;
-        --inc-surface-muted: #1d2433;
-        --inc-border: #2c3446;
-        --inc-border-strong: #7d8699;
-        --inc-text: #f1f5f9;
-        --inc-text-muted: #b4bccb;
-        --inc-row-hover: #1d2433;
-        --inc-focus: #60a5fa;
-        --inc-primary: #2563eb;
-        --inc-primary-text: #ffffff;
-        --inc-badge-bg: #fcd34d;
-        --inc-badge-text: #111827;
-        --inc-warn-text: #fcd34d;
-        --inc-warn-bg: #2a200e;
-        --inc-warn-border: #b45309;
-        --inc-error-text: #fca5a5;
-        --inc-error-bg: #2a1515;
-        --inc-info-text: #bfdbfe;
-        --inc-info-bg: #13223d;
-        --inc-teal: #5eead4;
-        --inc-teal-soft: #0f2a28;
-        --inc-blue: #93c5fd;
-        --inc-blue-soft: #13223d;
-        --inc-green: #86efac;
-        --inc-green-soft: #112a1c;
-        --inc-slate: #cbd5e1;
-        --inc-slate-soft: #1d2433;
-    }
 }
 
 .accentTeal {

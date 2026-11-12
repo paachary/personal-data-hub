@@ -27,7 +27,7 @@ export default function InputsTab({ form, set, otherIncome, validationError }) {
         <div>
             <div className={styles.inputsGrid}>
                 <IncomeCard form={form} set={set} otherIncome={otherIncome} />
-                <DeductionsCard form={form} set={set} />
+                <DeductionsCard form={form} set={set} dimmed={form.regime_choice === "new"} />
             </div>
 
             <div className={styles.optionsRow}>
